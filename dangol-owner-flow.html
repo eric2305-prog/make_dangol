@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>단골만들기 — 점주 가입·로그인·관리자 화면</title>
+<style>
+  :root{
+    --kakao:#FEE500;
+    --kakao-hover:#F5DC00;
+    --kakao-press:#EBD200;
+    --ink:#191919;
+    --ink-soft:#3C3C3C;
+    --muted:#767676;
+    --brown:#3A1D1D;
+    --line:#ECECEC;
+    --line-soft:#F2F2F2;
+    --tint:#FAFAF8;
+    --y-tint:#FFFBE0;
+    --y-tint-2:#FFF6C7;
+    --white:#FFFFFF;
+    --green:#3F8E45;
+    --green-tint:#EEF6EE;
+    --radius:16px;
+    --radius-lg:22px;
+    --shadow-sm:0 1px 2px rgba(25,25,25,.05);
+    --shadow-md:0 12px 32px rgba(25,25,25,.08);
+    --shadow-lg:0 26px 60px rgba(25,25,25,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink);background:var(--tint);line-height:1.62;
+    -webkit-font-smoothing:antialiased;letter-spacing:-.01em;
+  }
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit}
+
+  /* ===== shared buttons ===== */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-weight:700;font-size:1.02rem;padding:15px 26px;border-radius:12px;border:0;cursor:pointer;
+    transition:transform .15s ease, box-shadow .2s ease, background .2s ease;white-space:nowrap}
+  .btn-primary{background:var(--kakao);color:var(--ink);box-shadow:0 8px 18px rgba(254,229,0,.45)}
+  .btn-primary:hover{background:var(--kakao-hover);transform:translateY(-2px);box-shadow:0 12px 24px rgba(254,229,0,.55)}
+  .btn-primary:active{background:var(--kakao-press);transform:translateY(0)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink);background:var(--tint)}
+  .btn-block{width:100%}
+  .btn-lg{padding:17px 30px;font-size:1.06rem}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+  .logo-revaro{font-size:1.32rem;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+  .logo-revaro .dot-me{color:var(--kakao)}
+  .brand-sub{font-size:.82rem;color:var(--muted);font-weight:600;margin-top:2px}
+
+  /* ===== screen system ===== */
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* ===== auth layout (screens 1-3) ===== */
+  .auth{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:34px 18px 60px}
+  .auth-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+  .auth-card{width:100%;max-width:480px;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:32px 30px;position:relative;overflow:hidden}
+  .auth-card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--kakao)}
+  .auth-h{font-size:1.42rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+  .auth-desc{font-size:.98rem;color:var(--muted);margin-bottom:22px;line-height:1.6}
+
+  /* fields */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.9rem;font-weight:700;margin-bottom:7px;color:var(--ink-soft)}
+  .field .hint{font-size:.82rem;color:var(--muted);font-weight:500;margin-left:6px}
+  .input,.select{width:100%;font-family:inherit;font-size:1rem;padding:14px 15px;border:1px solid var(--line);
+    border-radius:12px;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+  .input::placeholder{color:#B6B6B6}
+  .input:focus,.select:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(254,229,0,.35)}
+  .input.pin{letter-spacing:.5em;text-align:center;font-weight:800;font-size:1.25rem;padding-left:.5em}
+
+  .checkrow{display:flex;align-items:flex-start;gap:11px;padding:14px;border:1px solid var(--line);
+    border-radius:12px;background:var(--tint);cursor:pointer;margin-top:4px}
+  .checkrow input{margin-top:3px;width:18px;height:18px;accent-color:var(--ink);flex:none}
+  .checkrow .t{font-size:.92rem;color:var(--ink-soft)}
+  .checkrow .t b{color:var(--ink)}
+
+  .helper{font-size:.88rem;color:var(--muted);margin-top:14px;text-align:center}
+  .link-line{text-align:center;margin-top:18px}
+  .link-line button{background:none;border:0;color:var(--muted);font-size:.9rem;font-weight:600;
+    cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .link-line button:hover{color:var(--ink)}
+
+  /* info card */
+  .info-card{margin-top:20px;background:var(--y-tint);border:1px solid var(--y-tint-2);
+    border-radius:14px;padding:15px 16px}
+  .info-card h4{font-size:.92rem;font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  .info-card .ic{width:22px;height:22px;border-radius:7px;background:var(--ink);color:var(--kakao);
+    display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex:none}
+  .info-card p{font-size:.86rem;color:var(--ink-soft);line-height:1.55}
+
+  .note-soft{font-size:.86rem;color:var(--muted);background:var(--tint);border:1px solid var(--line);
+    border-radius:12px;padding:13px 15px;margin-top:16px;line-height:1.55}
+  .note-soft b{color:var(--ink-soft)}
+
+  /* 입금계좌 카드 */
+  .pay-card{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:#fff;
+    box-shadow:var(--shadow-sm);overflow:hidden;text-align:left}
+  .pay-card .pay-head{display:flex;align-items:center;gap:8px;padding:14px 16px;background:var(--ink);color:#fff}
+  .pay-card .pay-head .pi{width:22px;height:22px;border-radius:7px;background:var(--kakao);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;flex:none}
+  .pay-card .pay-head b{font-size:.96rem;font-weight:800}
+  .pay-body{padding:16px}
+  .pay-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;font-size:.94rem}
+  .pay-row + .pay-row{border-top:1px solid var(--line-soft)}
+  .pay-row .pk{color:var(--muted);font-weight:600;flex:none}
+  .pay-row .pv{color:var(--ink);font-weight:700;text-align:right;display:flex;align-items:center;gap:8px}
+  .pay-row .pv .amt{color:#D9920A;font-weight:800}
+  .copy-btn{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:8px;border:1px solid var(--line);
+    background:var(--tint);color:var(--ink);cursor:pointer;white-space:nowrap;transition:all .15s}
+  .copy-btn:hover{border-color:var(--ink);background:#fff}
+  .pay-note{font-size:.82rem;color:var(--muted);line-height:1.55;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
+  .pay-note b{color:var(--ink-soft)}
+  .pay-eg{display:inline-block;font-size:.72rem;font-weight:700;color:#B8860B;background:#FFF6D6;
+    padding:2px 8px;border-radius:6px;margin-left:6px;vertical-align:middle}
+
+  /* ===== onboarding stepper ===== */
+  .stepper{display:flex;align-items:center;gap:0;margin-bottom:26px}
+  .stp{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative}
+  .stp .dot{width:30px;height:30px;border-radius:50%;background:var(--line-soft);color:var(--muted);
+    font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--line);transition:all .2s;z-index:2}
+  .stp .lab{font-size:.74rem;font-weight:700;color:var(--muted);text-align:center;line-height:1.25}
+  .stp::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:2px;background:var(--line);z-index:1}
+  .stp:first-child::before{display:none}
+  .stp.done .dot{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stp.current .dot{background:var(--kakao);color:var(--ink);border-color:var(--ink)}
+  .stp.current .lab,.stp.done .lab{color:var(--ink)}
+  .stp.done::before,.stp.current::before{background:var(--ink)}
+
+  .step-panel{display:none}
+  .step-panel.show{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .panel-h{font-size:1.18rem;font-weight:800;margin-bottom:6px}
+  .panel-sub{font-size:.92rem;color:var(--muted);margin-bottom:20px;line-height:1.55}
+
+  .why-list{list-style:none;display:flex;flex-direction:column;gap:11px;margin:4px 0 6px}
+  .why-list li{display:flex;gap:12px;align-items:flex-start;background:var(--tint);
+    border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .why-list .em{font-size:1.3rem;line-height:1;flex:none;margin-top:1px}
+  .why-list .tx b{display:block;font-size:.95rem;margin-bottom:2px}
+  .why-list .tx span{font-size:.86rem;color:var(--muted)}
+
+  /* qr preview */
+  .qr-prep{display:flex;gap:16px;align-items:center;background:var(--tint);
+    border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:6px}
+  .qr-box{width:96px;height:96px;border-radius:12px;background:#fff;border:1px solid var(--line);
+    flex:none;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);
+    gap:3px;padding:10px}
+  .qr-box i{background:var(--ink);border-radius:2px}
+  .qr-box i.o{background:transparent}
+  .qr-prep .qx b{display:block;font-size:.98rem;margin-bottom:4px}
+  .qr-prep .qx p{font-size:.86rem;color:var(--muted);line-height:1.5}
+
+  /* review */
+  .review{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:4px}
+  .review .r{display:flex;justify-content:space-between;gap:14px;padding:13px 16px;font-size:.94rem}
+  .review .r + .r{border-top:1px solid var(--line-soft)}
+  .review .r .k{color:var(--muted);font-weight:600;flex:none}
+  .review .r .v{color:var(--ink);font-weight:700;text-align:right}
+
+  .step-actions{display:flex;gap:10px;margin-top:24px}
+  .step-actions .btn{flex:1}
+  .step-actions .btn.solo{flex:1}
+
+  /* completion */
+  .done-wrap{text-align:center;padding:6px 0}
+  .done-ic{width:74px;height:74px;border-radius:50%;background:var(--kakao);margin:0 auto 18px;
+    display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+    box-shadow:0 10px 26px rgba(254,229,0,.45)}
+  .done-wrap h3{font-size:1.32rem;font-weight:800;margin-bottom:10px}
+  .done-wrap .toast-line{font-size:1rem;color:var(--ink-soft);margin-bottom:18px;line-height:1.6}
+
+  /* ===== dashboard ===== */
+  .dash{display:none;min-height:100vh}
+  .dash.active{display:grid;grid-template-columns:248px 1fr}
+  .side-backdrop{display:none}
+  .side{background:#fff;border-right:1px solid var(--line);padding:22px 16px;
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .side-brand{padding:6px 10px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .side-store{font-size:.82rem;color:var(--muted);margin-top:3px;font-weight:600}
+  .menu{list-style:none;display:flex;flex-direction:column;gap:3px}
+  .menu li button{width:100%;display:flex;align-items:center;gap:11px;padding:11px 12px;border:0;background:none;
+    border-radius:10px;font-size:.95rem;font-weight:600;color:var(--ink-soft);cursor:pointer;text-align:left;
+    transition:background .15s,color .15s}
+  .menu li button:hover{background:var(--tint);color:var(--ink)}
+  .menu li button.on{background:var(--y-tint);color:var(--ink);font-weight:800}
+  .menu li button.on .mi{color:#D9920A}
+  .menu .mi{width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center}
+  .menu .sep{height:1px;background:var(--line);margin:10px 4px}
+  .menu li button.logout{color:#C0453B}
+  .menu li button.logout:hover{background:#FDECEC}
+
+  .main{padding:26px 30px 60px;max-width:1080px}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .topbar .tt h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+  .topbar .tt .meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:.88rem;color:var(--muted)}
+  .topbar .tt .meta .login-ok{display:inline-flex;align-items:center;gap:5px;color:var(--green);font-weight:700;
+    background:var(--green-tint);padding:3px 9px;border-radius:999px}
+  .topbar .tt .meta .login-ok i{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .auto30{font-size:.82rem;color:var(--ink-soft);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:8px 14px;display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap}
+  .auto30 .ck{width:18px;height:18px;border-radius:50%;background:var(--kakao);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex:none}
+
+  .lead-line{font-size:1.06rem;font-weight:700;color:var(--ink);margin:18px 0 18px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 16px;box-shadow:var(--shadow-sm)}
+  .kpi .kl{font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .kpi .kn{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .kpi .kn .u{font-size:.86rem;font-weight:600;color:var(--muted);margin-left:2px}
+  .kpi.accent{background:#FFFBE6;border-color:var(--y-tint-2)}
+  .kpi.accent .kn{color:#D9920A}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);
+    margin-bottom:22px;overflow:hidden}
+  .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line-soft)}
+  .panel-head h2{font-size:1.12rem;font-weight:800}
+  .panel-head .sub{font-size:.86rem;color:var(--muted);margin-top:2px;font-weight:500}
+  .panel-head .count{font-size:.82rem;font-weight:800;color:#D9920A;background:#FFF6D6;padding:4px 11px;border-radius:999px}
+
+  /* table */
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:.8rem;color:var(--muted);font-weight:700;text-align:left;padding:11px 20px;background:var(--tint)}
+  .tbl td{padding:13px 20px;border-top:1px solid var(--line-soft);font-size:.94rem;vertical-align:middle}
+  .tbl .cust{display:flex;align-items:center;gap:11px}
+  .tbl .av{width:36px;height:36px;border-radius:50%;background:#EFEFEF;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;flex:none}
+  .tbl .nm{font-weight:700}
+  .tbl .pill{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap}
+  .pill.due{background:var(--ink);color:#fff}
+  .pill.soon{background:var(--y-tint-2);color:var(--brown)}
+  .pill.ok{background:var(--green-tint);color:var(--green)}
+  .btn-mini{font-size:.84rem;font-weight:700;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap;transition:all .15s}
+  .btn-mini:hover{border-color:var(--ink);background:var(--tint)}
+  .btn-mini.solid{background:var(--kakao);border-color:var(--kakao);box-shadow:0 4px 10px rgba(254,229,0,.4)}
+  .btn-mini.solid:hover{background:var(--kakao-hover)}
+
+  /* ai queue */
+  .queue{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+  .qmsg{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--tint)}
+  .qmsg .qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .qmsg .qav{width:34px;height:34px;border-radius:50%;background:#EFEFEF;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+  .qmsg .qwho b{font-size:.94rem}
+  .qmsg .qwho span{font-size:.8rem;color:var(--muted)}
+  .qmsg .qtag{margin-left:auto;font-size:.74rem;font-weight:700;color:var(--ink);
+    background:var(--kakao);padding:3px 9px;border-radius:999px}
+  .qmsg .qbody{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;
+    font-size:.92rem;color:var(--ink-soft);line-height:1.55}
+  .qmsg .qacts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .qmsg .qacts .btn-mini{flex:1;min-width:96px;text-align:center;display:inline-flex;justify-content:center}
+
+  /* 예약 링크 블록 */
+  .qbooking{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .qbk-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.86rem;color:var(--ink-soft);
+    background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:10px;font-weight:600}
+  .qbk-url{color:#D9920A;font-weight:700;text-decoration:none;word-break:break-all}
+  .qbk-toggle{display:inline-flex;align-items:center;gap:8px;font-size:.86rem;color:var(--ink-soft);font-weight:600;cursor:pointer;user-select:none}
+  .qbk-toggle input{width:17px;height:17px;accent-color:var(--ink);flex:none;cursor:pointer}
+  .qbk-toggle input:disabled{cursor:not-allowed}
+  .qbk-toggle:has(input:disabled){color:#B6B6B6;cursor:not-allowed}
+  .qbk-empty{display:none;font-size:.82rem;color:var(--ink-soft);background:var(--y-tint);border:1px solid var(--y-tint-2);
+    border-radius:10px;padding:9px 12px;margin-top:8px;line-height:1.5}
+
+  /* 매장 설정 폼 */
+  .set-body{padding:20px}
+  .set-body .field:last-of-type{margin-bottom:18px}
+  .set-body textarea.input{resize:vertical;min-height:64px;line-height:1.5}
+
+  /* qr panel */
+  .qr-panel{display:flex;gap:22px;align-items:center;padding:20px;flex-wrap:wrap}
+  .qr-big{width:140px;height:140px;border-radius:16px;background:#fff;border:1px solid var(--line);
+    flex:none;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:3px;padding:12px;
+    box-shadow:var(--shadow-sm)}
+  .qr-big i{background:var(--ink);border-radius:2px}
+  .qr-big i.o{background:transparent}
+  .qr-info{flex:1;min-width:220px}
+  .qr-info p{font-size:.94rem;color:var(--ink-soft);line-height:1.6;margin-bottom:14px}
+  .qr-info .qbtns{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* notice (no auto send) */
+  .notice{display:flex;gap:10px;align-items:flex-start;background:var(--y-tint);border:1px solid var(--y-tint-2);
+    border-radius:12px;padding:12px 14px;margin:0 20px 18px;font-size:.88rem;color:var(--ink-soft);line-height:1.5}
+  .notice .ni{flex:none;font-size:1.05rem;line-height:1.3}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-size:.94rem;font-weight:600;padding:14px 22px;border-radius:14px;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .3s ease;z-index:200;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .tk{color:var(--kakao);font-weight:800}
+
+  /* 고객정보 수정 모달 */
+  .modal-overlay{position:fixed;inset:0;background:rgba(25,25,25,.45);z-index:300;
+    display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.open{display:flex}
+  .modal{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);
+    width:100%;max-width:440px;max-height:90vh;overflow:auto;position:relative;animation:popin .2s ease}
+  @keyframes popin{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+  .modal-head h3{font-size:1.16rem;font-weight:800;letter-spacing:-.01em}
+  .modal-x{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;
+    color:var(--muted);font-size:1.1rem;cursor:pointer;flex:none;line-height:1;transition:all .15s}
+  .modal-x:hover{border-color:var(--ink);color:var(--ink);background:var(--tint)}
+  .modal-body{padding:20px 22px}
+  .modal-body textarea.input{resize:vertical;min-height:74px;line-height:1.5}
+  .phone-note{display:flex;gap:8px;align-items:flex-start;background:var(--y-tint);border:1px solid var(--y-tint-2);
+    border-radius:10px;padding:10px 12px;margin-top:8px;font-size:.82rem;color:var(--ink-soft);line-height:1.5}
+  .phone-note .pn-i{flex:none;font-size:.95rem;line-height:1.3}
+  .consent{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;
+    border:1px solid var(--line);border-radius:12px;background:var(--tint)}
+  .consent .c-tx b{display:block;font-size:.92rem}
+  .consent .c-tx span{font-size:.8rem;color:var(--muted)}
+  .switch{position:relative;width:46px;height:26px;flex:none}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch .track{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .18s;cursor:pointer}
+  .switch .track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+    background:#fff;box-shadow:var(--shadow-sm);transition:transform .18s}
+  .switch input:checked + .track{background:var(--kakao)}
+  .switch input:checked + .track::before{transform:translateX(20px)}
+  .modal-foot{padding:8px 22px 22px}
+  .modal-foot .btn{width:100%}
+
+
+  /* mobile */
+  .menu-btn{display:none}
+  @media (max-width:980px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .dash.active{grid-template-columns:1fr}
+    .side{position:fixed;left:0;top:0;width:264px;z-index:120;transform:translateX(-100%);
+      transition:transform .25s ease;box-shadow:var(--shadow-lg)}
+    .side.open{transform:translateX(0)}
+    .side-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:110;display:none}
+    .side-backdrop.open{display:block}
+    .menu-btn{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:11px;
+      border:1px solid var(--line);background:#fff;cursor:pointer;flex:none}
+    .main{padding:18px 18px 56px}
+  }
+  @media (max-width:560px){
+    .auth-card{padding:26px 20px}
+    .kpis{grid-template-columns:1fr 1fr;gap:10px}
+    .kpi .kn{font-size:1.55rem}
+    .tbl thead{display:none}
+    .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+    .tbl tr{border-top:1px solid var(--line);padding:12px 16px}
+    .tbl tr:first-child{border-top:0}
+    .tbl td{border:0;padding:5px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .tbl td::before{content:attr(data-l);font-size:.78rem;color:var(--muted);font-weight:700}
+    .tbl td.cell-cust::before{display:none}
+    .tbl td.cell-cust{padding-top:0}
+    .tbl td .btn-mini{width:100%}
+    .tbl td[data-l="액션"]{flex-direction:column;align-items:stretch;gap:8px}
+    .qr-panel{justify-content:center}
+    .topbar .tt h1{font-size:1.3rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  :focus-visible{outline:3px solid rgba(25,25,25,.55);outline-offset:2px;border-radius:8px}
+</style>
+</head>
+<body>
+
+<!-- ============ 화면 1 : 점주 로그인 ============ -->
+<section class="screen active" id="screen-login">
+  <div class="auth">
+    <div class="auth-brand">
+      <div class="logo-revaro">Revaro<span class="dot-me">.me</span></div>
+      <div class="brand-sub">단골만들기 · 점주 관리자</div>
+    </div>
+    <div class="auth-card">
+      <h1 class="auth-h">점주 관리자 로그인</h1>
+      <p class="auth-desc">승인 안내 문자로 받은 임시 PIN 또는 설정한 개인 PIN으로 로그인하세요.</p>
+
+      <div class="field">
+        <label>휴대폰 번호</label>
+        <input class="input" id="lg-phone" inputmode="numeric" placeholder="01012345678">
+      </div>
+      <div class="field">
+        <label>6자리 PIN</label>
+        <input class="input pin" id="lg-pin" inputmode="numeric" maxlength="6" placeholder="••••••">
+      </div>
+
+      <button class="btn btn-primary btn-lg btn-block" onclick="doLogin()">관리자 화면 들어가기</button>
+      <p class="helper">처음 로그인하시는 경우, 문자로 받은 임시 PIN을 입력해 주세요.</p>
+
+      <div class="info-card">
+        <h4><span class="ic">i</span>매번 인증번호를 받지 않아도 됩니다</h4>
+        <p>단골만들기는 최초 승인 후 발급된 PIN으로 로그인합니다. 로그인할 때마다 인증번호가 발송되지 않아 점주님의 이용 흐름이 더 간단합니다.</p>
+      </div>
+
+      <div class="link-line">
+        <button onclick="toast('PIN 재설정은 운영자 확인 후 진행됩니다.')">PIN을 잊으셨나요?</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 화면 3 : 첫 로그인 후 PIN 변경 ============ -->
+<section class="screen" id="screen-pin">
+  <div class="auth">
+    <div class="auth-brand">
+      <div class="logo-revaro">Revaro<span class="dot-me">.me</span></div>
+      <div class="brand-sub">단골만들기 · 첫 로그인</div>
+    </div>
+    <div class="auth-card">
+      <h1 class="auth-h">새 로그인 PIN 설정</h1>
+      <p class="auth-desc">앞으로 관리자 화면에 접속할 때 사용할 6자리 PIN을 설정해 주세요.</p>
+
+      <div class="field">
+        <label>새 6자리 PIN</label>
+        <input class="input pin" id="np-pin" inputmode="numeric" maxlength="6" placeholder="••••••">
+      </div>
+      <div class="field">
+        <label>새 PIN 확인</label>
+        <input class="input pin" id="np-pin2" inputmode="numeric" maxlength="6" placeholder="••••••">
+      </div>
+
+      <button class="btn btn-primary btn-lg btn-block" onclick="savePin()">새 PIN 저장하고 시작하기</button>
+
+      <div class="note-soft">임시 PIN은 첫 로그인 후 사용할 수 없습니다. 다음 로그인부터는 새로 설정한 PIN을 사용합니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 화면 4 : 점주 관리자 대시보드 ============ -->
+<div class="dash" id="screen-dash">
+  <div class="side-backdrop" id="sideBackdrop" onclick="toggleSide(false)"></div>
+  <aside class="side" id="side">
+    <div class="side-brand">
+      <div class="logo-revaro">Revaro<span class="dot-me">.me</span></div>
+      <div class="side-store">라온 헤어 신촌점</div>
+    </div>
+    <ul class="menu">
+      <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
+      <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 고객</button></li>
+      <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>AI 메시지</button></li>
+      <li><button onclick="scrollTo2('qrPanel')"><span class="mi">▦</span>매장 QR</button></li>
+      <li><button onclick="scrollTo2('settingsPanel')"><span class="mi">⚙</span>매장 설정</button></li>
+      <div class="sep"></div>
+      <li><button class="logout" onclick="logout()"><span class="mi">⏻</span>로그아웃</button></li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="tt">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="menu-btn" onclick="toggleSide(true)" aria-label="메뉴 열기">☰</button>
+          <h1>라온 헤어 신촌점</h1>
+        </div>
+        <div class="meta">
+          <span id="today">오늘</span>
+          <span class="login-ok"><i></i>로그인됨</span>
+        </div>
+      </div>
+      <span class="auto30"><span class="ck">✓</span>30일 자동 로그인 유지 중</span>
+    </div>
+
+    <p class="lead-line">오늘 보낼 메시지를 확인하고, 단골 고객을 다시 불러오세요.</p>
+
+    <!-- KPI -->
+    <div class="kpis">
+      <div class="kpi accent"><div class="kl">오늘 보낼 메시지</div><div class="kn">9<span class="u">건</span></div></div>
+      <div class="kpi"><div class="kl">재방문 지난 고객</div><div class="kn">4<span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 주 챙길 고객</div><div class="kn">28<span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn">14<span class="u">명</span></div></div>
+    </div>
+
+    <!-- 이번 주 챙길 고객 -->
+    <div class="panel" id="visitPanel">
+      <div class="panel-head">
+        <div><h2>이번 주 챙길 고객</h2><div class="sub">방문 주기를 기준으로 다시 연락하면 좋은 고객입니다.</div></div>
+        <span class="count">28명 대기</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>고객명</th><th>마지막 방문</th><th>다시 올 시점</th><th>상태</th><th>액션</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">김</span><span class="nm">김서연</span></div></td>
+            <td data-l="마지막 방문">38일 전</td>
+            <td data-l="예상 재방문">이번 주</td>
+            <td data-l="상태"><span class="pill due">재방문 시기</span></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">이</span><span class="nm">이준호</span></div></td>
+            <td data-l="마지막 방문">24일 전</td>
+            <td data-l="예상 재방문">3일 뒤</td>
+            <td data-l="상태"><span class="pill soon">곧 안내</span></td>
+            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">박</span><span class="nm">박지민</span></div></td>
+            <td data-l="마지막 방문">31일 전</td>
+            <td data-l="예상 재방문">오늘</td>
+            <td data-l="상태"><span class="pill due">재방문 시기</span></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">최</span><span class="nm">최은우</span></div></td>
+            <td data-l="마지막 방문">19일 전</td>
+            <td data-l="예상 재방문">5일 뒤</td>
+            <td data-l="상태"><span class="pill ok">여유 있음</span></td>
+            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">정</span><span class="nm">정하늘</span></div></td>
+            <td data-l="마지막 방문">42일 전</td>
+            <td data-l="예상 재방문">지남</td>
+            <td data-l="상태"><span class="pill due">재방문 시기</span></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">윤</span><span class="nm">윤서진</span></div></td>
+            <td data-l="마지막 방문">27일 전</td>
+            <td data-l="예상 재방문">2일 뒤</td>
+            <td data-l="상태"><span class="pill soon">곧 안내</span></td>
+            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">강</span><span class="nm">강민재</span></div></td>
+            <td data-l="마지막 방문">35일 전</td>
+            <td data-l="예상 재방문">오늘</td>
+            <td data-l="상태"><span class="pill due">재방문 시기</span></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">한</span><span class="nm">한지우</span></div></td>
+            <td data-l="마지막 방문">22일 전</td>
+            <td data-l="예상 재방문">4일 뒤</td>
+            <td data-l="상태"><span class="pill soon">곧 안내</span></td>
+            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+          <tr>
+            <td class="cell-cust"><div class="cust"><span class="av">오</span><span class="nm">오세라</span></div></td>
+            <td data-l="마지막 방문">16일 전</td>
+            <td data-l="예상 재방문">6일 뒤</td>
+            <td data-l="상태"><span class="pill ok">여유 있음</span></td>
+            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 오늘 보낼 AI 메시지 -->
+    <div class="panel" id="queuePanel">
+      <div class="panel-head">
+        <div><h2>오늘 보낼 AI 메시지</h2><div class="sub">점주가 승인한 메시지만 발송됩니다.</div></div>
+        <span class="count">9건 대기</span>
+      </div>
+      <div class="notice"><span class="ni">🔔</span><span>자동 발송되지 않습니다. 확인 후 ‘이 메시지 보내기’를 눌러야 발송됩니다.</span></div>
+      <div class="queue">
+        <div class="qmsg" id="q1">
+          <div class="qtop"><span class="qav">김</span><span class="qwho"><b>김서연</b> <span>· 마지막 방문 38일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">서연님, 지난번 컬러 잘 유지되고 계신가요? 보통 이맘때 리터치를 많이 받으세요. 이번 주 예약 도와드릴까요?</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q1')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q1')">나중에</button>
+          </div>
+        </div>
+        <div class="qmsg" id="q2">
+          <div class="qtop"><span class="qav">박</span><span class="qwho"><b>박지민</b> <span>· 마지막 방문 31일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">지민님, 한 달쯤 지났네요! 다음 방문 때 쓰실 수 있는 단골 혜택을 안내드리려고요. 편하신 시간 알려주시면 예약 잡아드릴게요.</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q2')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q2')">나중에</button>
+          </div>
+        </div>
+        <div class="qmsg" id="q3">
+          <div class="qtop"><span class="qav">정</span><span class="qwho"><b>정하늘</b> <span>· 마지막 방문 42일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">하늘님, 오랜만이에요! 그동안 머릿결 어떠셨어요? 이번 주에 오시면 트리트먼트 한 번 챙겨드릴게요. 예약 도와드릴까요?</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q3')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q3')">나중에</button>
+          </div>
+        </div>
+        <div class="qmsg" id="q4">
+          <div class="qtop"><span class="qav">강</span><span class="qwho"><b>강민재</b> <span>· 마지막 방문 35일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">민재님, 보통 이맘때 커트하러 많이 오세요. 이번 주말 자리 비어 있는데 미리 잡아드릴까요?</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q4')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q4')">나중에</button>
+          </div>
+        </div>
+        <div class="qmsg" id="q5">
+          <div class="qtop"><span class="qav">이</span><span class="qwho"><b>이준호</b> <span>· 마지막 방문 24일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">준호님, 지난번 스타일 잘 어울리셨어요! 다음 손질 시기쯤 됐는데 편하신 날 알려주시면 예약 맞춰드릴게요.</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q5')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q5')">나중에</button>
+          </div>
+        </div>
+        <div class="qmsg" id="q6">
+          <div class="qtop"><span class="qav">윤</span><span class="qwho"><b>윤서진</b> <span>· 마지막 방문 27일 전</span></span><span class="qtag">AI 제안</span></div>
+          <div class="qbody">서진님, 곧 뿌리 염색 시기예요. 원하시면 지난번과 같은 컬러로 미리 예약 잡아드릴게요. 편하신 시간 있으세요?</div>
+          <div class="qbooking">
+            <div class="qbk-line">예약하기: <a class="qbk-url" href="https://booking.naver.com/example" onclick="return false">https://booking.naver.com/example</a></div>
+            <label class="qbk-toggle"><input type="checkbox" class="qbk-check" checked onchange="toggleBooking(this)"><span>예약 링크 포함</span></label>
+            <div class="qbk-empty">예약 링크를 사용하려면 매장 설정에서 먼저 등록해 주세요.</div>
+          </div>
+          <div class="qacts">
+            <button class="btn-mini solid" onclick="approveMsg('q6')">이 메시지 보내기</button>
+            <button class="btn-mini" onclick="toast('메시지 문구 수정 화면을 연결합니다.')">문구 수정</button>
+            <button class="btn-mini" onclick="laterMsg('q6')">나중에</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우리 매장 QR -->
+    <div class="panel" id="qrPanel">
+      <div class="panel-head"><div><h2>우리 매장 QR</h2></div></div>
+      <div class="qr-panel">
+        <div class="qr-big">
+          <i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i>
+          <i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i>
+          <i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i>
+          <i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i>
+          <i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i>
+          <i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i>
+        </div>
+        <div class="qr-info">
+          <p>고객이 QR을 찍고 휴대폰 번호를 입력하면 단골 명단에 등록됩니다. 카운터나 테이블에 붙여두세요.</p>
+          <div class="qbtns">
+            <button class="btn btn-primary" onclick="toast('QR 다운로드 기능을 연결합니다.')">QR 다운로드</button>
+            <button class="btn btn-ghost" onclick="toast('인쇄용 안내문 화면을 연결합니다.')">인쇄용 안내문 보기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 매장 설정 -->
+    <div class="panel" id="settingsPanel">
+      <div class="panel-head"><div><h2>매장 설정</h2><div class="sub">예약 링크를 등록하면 AI 메시지에 자동으로 포함됩니다.</div></div></div>
+      <div class="set-body">
+        <div class="field"><label>매장명</label><input class="input" id="set-name" type="text" value="라온 헤어 신촌점"></div>
+        <div class="field"><label>대표 전화번호</label><input class="input" id="set-tel" inputmode="numeric" placeholder="0212345678" value="0212345678"></div>
+        <div class="field"><label>예약 링크</label><input class="input" id="set-link" type="url" placeholder="https://booking.naver.com/..." value="https://booking.naver.com/example"></div>
+        <div class="field"><label>기본 안내 문구</label><textarea class="input" id="set-guide" placeholder="예약은 아래 링크에서 편하게 남겨주세요.">예약은 아래 링크에서 편하게 남겨주세요.</textarea></div>
+        <button class="btn btn-primary btn-lg" style="width:100%" onclick="saveStore()">매장 설정 저장</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 고객정보 수정 모달 -->
+<div class="modal-overlay" id="editOverlay" onclick="overlayClose(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="modal-head">
+      <h3 id="editTitle">고객정보 수정</h3>
+      <button class="modal-x" onclick="closeEdit()" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>고객 이름</label>
+        <input class="input" id="ed-name" type="text" placeholder="고객 이름">
+      </div>
+      <div class="field">
+        <label>휴대폰 번호</label>
+        <input class="input" id="ed-phone" inputmode="numeric" placeholder="01012345678">
+        <div class="phone-note"><span class="pn-i">⚠️</span><span>휴대폰 번호는 고객 식별 기준입니다. 실제 고객 번호가 맞는지 확인 후 저장해 주세요.</span></div>
+      </div>
+      <div class="field">
+        <label>마지막 방문일</label>
+        <input class="input" id="ed-visit" type="date">
+      </div>
+      <div class="field">
+        <label>고객 메모 <span class="hint">선택</span></label>
+        <textarea class="input" id="ed-memo" placeholder="예) 펌 주기 2개월, 밝은 컬러 선호"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="consent">
+          <span class="c-tx"><b>마케팅 수신 동의</b><span>재방문 안내 메시지 발송에 사용됩니다.</span></span>
+          <label class="switch"><input type="checkbox" id="ed-consent"><span class="track"></span></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-lg" onclick="saveEdit()">수정 내용 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var screens = ['screen-login','screen-pin','screen-dash'];
+
+  function showScreen(id){
+    screens.forEach(function(s){
+      var el = document.getElementById(s);
+      if(!el) return;
+      if(s === id){ el.classList.add('active'); }
+      else { el.classList.remove('active'); }
+    });
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  /* ---------- login ---------- */
+  function doLogin(){
+    var phone = document.getElementById('lg-phone').value.trim();
+    var pin = document.getElementById('lg-pin').value.trim();
+    if(phone.length < 9){ toast('휴대폰 번호를 입력해 주세요.'); return; }
+    if(pin.length !== 6){ toast('6자리 PIN을 입력해 주세요.'); return; }
+    /* 데모: 첫 로그인(임시 PIN) → PIN 변경 화면으로 안내 */
+    showScreen('screen-pin');
+    toast('임시 PIN으로 로그인했습니다. 새 PIN을 설정해 주세요.');
+  }
+
+  /* ---------- pin setup ---------- */
+  function savePin(){
+    var a = document.getElementById('np-pin').value.trim();
+    var b = document.getElementById('np-pin2').value.trim();
+    if(a.length !== 6){ toast('새 6자리 PIN을 입력해 주세요.'); return; }
+    if(a !== b){ toast('두 PIN이 일치하지 않습니다.'); return; }
+    enterDash();
+    toast('새 PIN이 저장되었습니다. 환영합니다!');
+  }
+
+  /* ---------- dashboard ---------- */
+  function enterDash(){
+    screens.forEach(function(s){ document.getElementById(s).classList.remove('active'); });
+    document.getElementById('screen-dash').classList.add('active');
+    setToday();
+    renderBooking();
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+  function setToday(){
+    var d = new Date();
+    var days = ['일','월','화','수','목','금','토'];
+    document.getElementById('today').textContent =
+      d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
+  }
+  function logout(){
+    document.getElementById('screen-dash').classList.remove('active');
+    toggleSide(false);
+    showScreen('screen-login');
+    toast('로그아웃되었습니다.');
+  }
+  function scrollQueue(){
+    scrollTo2('queuePanel');
+  }
+  function scrollTo2(id){
+    var p = document.getElementById(id);
+    if(!p) return;
+    toggleSide(false);
+    p.scrollIntoView({behavior:'smooth', block:'start'});
+    p.style.transition='box-shadow .4s'; p.style.boxShadow='0 0 0 3px var(--kakao)';
+    setTimeout(function(){ p.style.boxShadow=''; }, 1200);
+  }
+  function approveMsg(id){
+    var el = document.getElementById(id);
+    var chk = el ? el.querySelector('.qbk-check') : null;
+    var withLink = !!bookingLink && chk && chk.checked && !chk.disabled;
+    if(el){ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(20px)';
+      setTimeout(function(){ el.remove(); }, 300); }
+    toast(withLink ? '예약 링크를 포함해 메시지를 보냈습니다.' : '메시지를 보냈습니다.');
+  }
+  function laterMsg(id){
+    var el = document.getElementById(id);
+    if(el){ el.style.opacity='.45'; }
+    toast('나중에 보기로 옮겼습니다.');
+  }
+
+  /* ---------- 예약 링크 / 매장 설정 ---------- */
+  var bookingLink = 'https://booking.naver.com/example';
+
+  function renderBooking(){
+    var has = !!bookingLink;
+    document.querySelectorAll('.qmsg').forEach(function(card){
+      var chk = card.querySelector('.qbk-check');
+      var line = card.querySelector('.qbk-line');
+      var empty = card.querySelector('.qbk-empty');
+      var url = card.querySelector('.qbk-url');
+      if(url && has){ url.textContent = bookingLink; url.setAttribute('href', bookingLink); }
+      if(chk){ chk.disabled = !has; if(!has) chk.checked = false; }
+      if(empty){ empty.style.display = has ? 'none' : 'block'; }
+      if(line){ line.style.display = (has && chk && chk.checked) ? 'flex' : 'none'; }
+    });
+  }
+  function toggleBooking(chk){
+    var card = chk.closest('.qmsg');
+    var line = card ? card.querySelector('.qbk-line') : null;
+    if(line){ line.style.display = chk.checked ? 'flex' : 'none'; }
+  }
+  function saveStore(){
+    var v = document.getElementById('set-link').value.trim();
+    bookingLink = v;
+    renderBooking();
+    toast('매장 설정이 저장되었습니다.');
+  }
+
+  /* ---------- 고객정보 수정 모달 ---------- */
+  function openEdit(btn){
+    var row = btn.closest('tr');
+    var nameEl = row ? row.querySelector('.nm') : null;
+    var visitEl = row ? row.querySelector('[data-l="마지막 방문"]') : null;
+    document.getElementById('ed-name').value = nameEl ? nameEl.textContent.trim() : '';
+    document.getElementById('ed-phone').value = '';
+    document.getElementById('ed-memo').value = '';
+    document.getElementById('ed-consent').checked = true;
+    /* "38일 전" → 오늘에서 38일 전 날짜로 채움 */
+    var iso = '';
+    if(visitEl){
+      var m = visitEl.textContent.match(/(\d+)/);
+      if(m){ var d = new Date(); d.setDate(d.getDate() - parseInt(m[1],10)); iso = d.toISOString().slice(0,10); }
+    }
+    document.getElementById('ed-visit').value = iso;
+    document.getElementById('editOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeEdit(){
+    document.getElementById('editOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function overlayClose(e){
+    if(e.target === document.getElementById('editOverlay')) closeEdit();
+  }
+  function saveEdit(){
+    closeEdit();
+    toast('고객정보가 수정되었습니다.');
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeEdit();
+  });
+  function toggleSide(open){
+    var s = document.getElementById('side'), b = document.getElementById('sideBackdrop');
+    if(open){ s.classList.add('open'); b.classList.add('open'); }
+    else { s.classList.remove('open'); b.classList.remove('open'); }
+  }
+
+  /* ---------- 계좌 복사 ---------- */
+  function copyAccount(){
+    var acc = document.getElementById('payAcc').textContent.trim();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(acc).then(function(){ toast('계좌번호를 복사했습니다.'); })
+        .catch(function(){ toast('계좌번호: ' + acc); });
+    } else {
+      toast('계좌번호: ' + acc);
+    }
+  }
+
+  /* ---------- toast ---------- */
+  var toastTimer;
+  function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  /* digits only for pin/phone */
+  document.querySelectorAll('input[inputmode="numeric"]').forEach(function(inp){
+    inp.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9]/g,''); });
+  });
+</script>
+</body>
+</html>
