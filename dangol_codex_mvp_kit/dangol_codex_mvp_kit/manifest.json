@@ -1,0 +1,18 @@
+{
+  "purpose": "Codex upload kit for Dangol MVP",
+  "copied_files": [
+    "architecture.md",
+    "nextjs.md",
+    "supabase.md",
+    "design.md",
+    "qa-checklist.md",
+    "deployment.md",
+    "mvpit-researcher.md",
+    "mvpit-supabase-reviewer.md",
+    "mvpit-frontend-reviewer.md",
+    "mvpit-release-reviewer.md",
+    "dangol_mvp_final_for_claude.md"
+  ],
+  "missing_files": [],
+  "note": "Skill files were reconstructed for Codex because uploaded skill files had duplicate SKILL.md names."
+}
