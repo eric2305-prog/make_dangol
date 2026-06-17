@@ -1,4 +1,26 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/dangol-onboarding",
+      "destination": "/start",
+      "permanent": true
+    },
+    {
+      "source": "/dangol-onboarding.html",
+      "destination": "/start",
+      "permanent": true
+    },
+    {
+      "source": "/dangol-owner-flow",
+      "destination": "/owner",
+      "permanent": true
+    },
+    {
+      "source": "/dangol-owner-flow.html",
+      "destination": "/owner",
+      "permanent": true
+    }
+  ]
 }
