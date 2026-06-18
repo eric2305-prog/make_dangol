@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운영관리자 로그인 | REVARO</title>
+<style>
+  :root{--kakao:#FEE500;--ink:#191919;--soft:#3C3C3C;--muted:#767676;--line:#ECECEC;--tint:#FAFAF8;--warn:#FFFBE6;--warn-line:#FFF6C7}
+  *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--tint);font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;color:var(--ink)}
+  .login{width:min(100% - 32px,460px);background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 26px 60px rgba(25,25,25,.1);overflow:hidden}
+  .bar{height:6px;background:var(--kakao)}
+  .body{padding:34px 30px 30px}
+  .brand{font-size:1.45rem;font-weight:900;letter-spacing:-.03em;margin-bottom:22px}.brand span{color:#F2D200}
+  h1{font-size:1.55rem;line-height:1.25;margin:0 0 8px}.desc{margin:0 0 26px;color:var(--muted);font-size:.96rem}
+  label{display:block;font-size:.9rem;font-weight:800;margin:16px 0 7px;color:var(--soft)}
+  input{width:100%;border:1px solid var(--line);border-radius:13px;padding:14px 15px;font:inherit;outline:none} input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(254,229,0,.35)}
+  button{width:100%;margin-top:22px;border:0;border-radius:13px;background:var(--kakao);color:var(--ink);font:inherit;font-weight:900;padding:15px;cursor:pointer;box-shadow:0 8px 18px rgba(254,229,0,.35)}
+  .notice{margin-top:18px;background:var(--warn);border:1px solid var(--warn-line);border-radius:14px;padding:14px 15px;color:var(--soft);font-size:.88rem;line-height:1.6}
+  .notice b{color:var(--ink)} .error{display:none;margin-top:12px;color:#E0483C;font-size:.88rem;font-weight:800}.error.show{display:block}
+</style>
+</head>
+<body>
+  <main class="login">
+    <div class="bar"></div>
+    <section class="body">
+      <div class="brand">Revaro<span>.me</span></div>
+      <h1>운영관리자 로그인</h1>
+      <p class="desc">단골만들기 내부 운영자 전용 화면입니다.</p>
+      <form id="loginForm">
+        <label for="email">이메일</label>
+        <input id="email" type="email" autocomplete="username" placeholder="operator@revaro.me">
+        <label for="password">비밀번호 또는 6자리 OTP</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="비밀번호 또는 OTP 입력">
+        <div class="error" id="error">이메일과 비밀번호 또는 OTP를 입력해 주세요.</div>
+        <button type="submit">운영관리자 콘솔 들어가기</button>
+      </form>
+      <div class="notice"><b>보안 안내</b><br>운영자 계정은 내부에서만 생성됩니다. 외부 셀프 가입은 제공하지 않습니다.</div>
+    </section>
+  </main>
+<script>
+  if(localStorage.getItem('revaroOperatorSession') === 'active') location.replace('/operator');
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value.trim();
+    if(!email || !password){ document.getElementById('error').classList.add('show'); return; }
+    localStorage.setItem('revaroOperatorSession','active');
+    localStorage.setItem('revaroOperatorName', email.split('@')[0] || '운영자');
+    location.href = '/operator';
+  });
+</script>
+</body>
+</html>
