@@ -22,5 +22,11 @@
       "destination": "/owner",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/s/:store_id",
+      "destination": "/customer.html"
+    }
   ]
 }

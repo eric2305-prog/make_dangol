@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>단골만들기 — 고객 등록 · 방문 확인</title>
+<style>
+  :root{
+    --kakao:#FEE500; --kakao-hover:#F5DC00; --kakao-press:#EBD200;
+    --ink:#191919; --ink-soft:#3C3C3C; --muted:#767676;
+    --line:#ECECEC; --line-soft:#F2F2F2;
+    --tint:#FAFAF8; --y-tint:#FFFBE0; --y-tint-2:#FFF6C7;
+    --green:#3F8E45; --green-tint:#EEF6EE;
+    --radius:16px; --radius-lg:22px;
+    --shadow-sm:0 1px 2px rgba(25,25,25,.05);
+    --shadow-md:0 12px 32px rgba(25,25,25,.08);
+    --shadow-lg:0 22px 50px rgba(25,25,25,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink);background:var(--tint);line-height:1.6;
+    -webkit-font-smoothing:antialiased;letter-spacing:-.01em;
+  }
+  button{font-family:inherit}
+
+  /* ===== 모바일 셸 ===== */
+  .phone{max-width:440px;margin:0 auto;min-height:100vh;background:#fff;
+    display:flex;flex-direction:column;position:relative;
+    box-shadow:0 0 0 1px var(--line)}
+  @media(min-width:480px){ .phone{min-height:100vh;border-left:1px solid var(--line);border-right:1px solid var(--line)} body{padding:0} }
+
+  /* 매장 헤더 */
+  .store-bar{display:flex;align-items:center;gap:9px;padding:16px 20px;border-bottom:1px solid var(--line-soft);
+    background:#fff;position:sticky;top:0;z-index:5}
+  .store-bar .sn{font-size:1rem;font-weight:800}
+  .store-bar .sn small{display:block;font-size:.74rem;color:var(--muted);font-weight:600;margin-top:1px}
+
+  /* 화면 전환 */
+  .view{display:none;flex:1;flex-direction:column;padding:30px 22px 24px;animation:fade .25s ease}
+  .view.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:#B8860B;
+    background:var(--y-tint);border:1px solid var(--y-tint-2);padding:5px 11px;border-radius:999px;align-self:flex-start;margin-bottom:16px}
+  h1.q{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:10px}
+  .lead{font-size:.98rem;color:var(--muted);line-height:1.6;margin-bottom:26px}
+
+  /* 입력 */
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--ink-soft)}
+  .input{width:100%;font-family:inherit;font-size:1.06rem;padding:16px 16px;border:1.5px solid var(--line);
+    border-radius:14px;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+  .input::placeholder{color:#B6B6B6}
+  .input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px rgba(254,229,0,.4)}
+  .input.big{font-size:1.2rem;font-weight:700;letter-spacing:.02em}
+
+  .readonly-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--tint);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+  .readonly-row .rk{font-size:.82rem;color:var(--muted);font-weight:700}
+  .readonly-row .rv{font-size:1.05rem;font-weight:800}
+  .readonly-row .redo{font-size:.84rem;font-weight:700;color:var(--ink-soft);background:#fff;border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;cursor:pointer}
+  .readonly-row .redo:active{background:var(--tint)}
+
+  /* 수신 동의 */
+  .consent{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;margin-top:2px}
+  .consent .c-tx b{display:block;font-size:.96rem;font-weight:700}
+  .consent .c-tx span{font-size:.82rem;color:var(--muted)}
+  .switch{position:relative;width:50px;height:29px;flex:none}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch .track{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .18s;cursor:pointer}
+  .switch .track::before{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;
+    background:#fff;box-shadow:var(--shadow-sm);transition:transform .18s}
+  .switch input:checked + .track{background:var(--kakao)}
+  .switch input:checked + .track::before{transform:translateX(21px)}
+
+  .privacy{font-size:.82rem;color:var(--muted);line-height:1.55;margin-top:16px;
+    background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .privacy b{color:var(--ink-soft)}
+
+  /* 환영 카드 (재방문) */
+  .welcome{background:var(--y-tint);border:1px solid var(--y-tint-2);border-radius:18px;padding:22px;margin-bottom:8px}
+  .welcome .hi{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+  .welcome .hi .wave{font-size:1.4rem}
+  .welcome .lines{display:flex;flex-direction:column;gap:10px}
+  .welcome .wl{display:flex;align-items:center;gap:10px;font-size:.96rem;color:var(--ink-soft)}
+  .welcome .wl .ic{width:30px;height:30px;border-radius:9px;background:#fff;border:1px solid var(--y-tint-2);
+    display:flex;align-items:center;justify-content:center;font-size:.95rem;flex:none}
+  .welcome .wl b{color:var(--ink);font-weight:800}
+
+  /* 완료 */
+  .done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 0}
+  .done-ic{width:88px;height:88px;border-radius:50%;background:var(--kakao);margin-bottom:22px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(254,229,0,.5);animation:pop .4s ease}
+  @keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+  .done-ic svg{width:42px;height:42px}
+  .done h2{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+  .done p{font-size:1rem;color:var(--ink-soft);line-height:1.65;max-width:300px}
+  .done .next{margin-top:22px;font-size:.86rem;color:var(--muted);background:var(--tint);
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;line-height:1.6;max-width:320px}
+  .done .next b{color:var(--ink-soft)}
+
+  /* 하단 고정 버튼 영역 */
+  .foot{margin-top:auto;padding-top:22px}
+  .btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-weight:800;font-size:1.1rem;padding:18px 24px;border-radius:15px;border:0;cursor:pointer;
+    transition:transform .12s ease, box-shadow .2s ease, background .2s ease}
+  .btn-primary{background:var(--kakao);color:var(--ink);box-shadow:0 10px 22px rgba(254,229,0,.5)}
+  .btn-primary:active{background:var(--kakao-press);transform:translateY(1px)}
+  .btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .btn-text{width:100%;background:none;border:0;color:var(--muted);font-size:.94rem;font-weight:700;
+    padding:14px;margin-top:6px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .btn-text:active{color:var(--ink)}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-size:.92rem;font-weight:600;padding:13px 20px;border-radius:13px;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .3s ease;z-index:200;max-width:88vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  :focus-visible{outline:3px solid rgba(25,25,25,.5);outline-offset:2px;border-radius:10px}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- 매장 헤더 (모든 화면 공통) -->
+  <div class="store-bar">
+    <span class="sn"><span id="store-name">매장 확인 중</span><small>단골 등록 · 방문 확인</small></span>
+  </div>
+
+  <!-- ===== 화면 1 : 번호 입력 (등록·방문 공통 진입) ===== -->
+  <section class="view on" id="v-start">
+    <span class="eyebrow">★ 30초면 끝나요</span>
+    <h1 class="q">휴대폰 번호를<br>입력해 주세요</h1>
+    <p class="lead">번호 하나로 단골 등록과 방문 확인을 함께 처리해요. 다음에 오실 땐 같은 번호만 입력하면 끝이에요.</p>
+
+    <div class="field">
+      <label for="phone">휴대폰 번호</label>
+      <input class="input big" id="phone" inputmode="numeric" maxlength="11" placeholder="01012345678" autocomplete="tel">
+    </div>
+
+    <div class="privacy">
+      <b>안심하세요.</b> 입력한 번호는 이 매장의 단골 관리(방문 기록·재방문 안내)에만 쓰여요. 다른 곳에 공유되지 않아요.
+    </div>
+
+    <div class="foot">
+      <button class="btn btn-primary" id="startBtn" onclick="lookup()" disabled>계속하기</button>
+    </div>
+  </section>
+
+  <!-- ===== 화면 2A : 신규 등록 ===== -->
+  <section class="view" id="v-register">
+    <span class="eyebrow">처음 오셨네요</span>
+    <h1 class="q">단골로 등록할게요</h1>
+    <p class="lead">이름만 알려주시면 끝나요. 다음 방문부터는 번호만 입력하시면 돼요.</p>
+
+    <div class="field">
+      <label for="name">이름</label>
+      <input class="input" id="name" type="text" placeholder="이름을 입력해 주세요" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label>휴대폰 번호</label>
+      <div class="readonly-row">
+        <span class="rv" id="reg-phone">010-0000-0000</span>
+        <button class="redo" onclick="goStart()">번호 수정</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <div class="consent">
+        <span class="c-tx">
+          <b>재방문 안내 받기</b>
+          <span>카카오톡으로 방문하기 좋은 시점을 안내해 드려요.</span>
+        </span>
+        <label class="switch"><input type="checkbox" id="reg-consent" checked><span class="track"></span></label>
+      </div>
+    </div>
+    <div class="privacy" style="margin-top:12px">안내를 안 받아도 단골 등록은 그대로 돼요. 나중에 매장에 말씀하시면 언제든 바꿀 수 있어요.</div>
+
+    <div class="foot">
+      <button class="btn btn-primary" id="registerBtn" onclick="doRegister()">단골 등록하기</button>
+      <button class="btn-text" onclick="goStart()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- ===== 화면 2B : 재방문 확인 ===== -->
+  <section class="view" id="v-checkin">
+    <span class="eyebrow">반가워요</span>
+    <div class="welcome">
+      <div class="hi">다시 오셨네요, <span id="ci-name">서연</span>님 <span class="wave">👋</span></div>
+      <div class="lines">
+        <div class="wl" id="ci-last-row"><span class="ic">📅</span><span>마지막 방문 <b id="ci-last">38일 전</b></span></div>
+        <div class="wl" id="ci-count-row"><span class="ic">✨</span><span>오늘로 <b id="ci-count">8</b>번째 방문이에요</span></div>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:20px">아래 버튼을 누르면 오늘 방문이 기록돼요. 잠깐이면 끝나요.</p>
+
+    <div class="foot">
+      <button class="btn btn-primary" id="checkinBtn" onclick="doCheckin()">방문 확인하기</button>
+      <button class="btn-text" onclick="goStart()">내가 아니에요 · 번호 다시 입력</button>
+    </div>
+  </section>
+
+  <!-- ===== 화면 3A : 등록 완료 ===== -->
+  <section class="view" id="v-done-register">
+    <div class="done">
+      <div class="done-ic">
+        <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="#191919" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 id="dr-title">단골로 등록됐어요</h2>
+      <p>환영해요! 이제 <span id="dr-store">우리 매장</span>의 단골이에요.</p>
+      <div class="next">
+        <b>다음 방문 때는</b><br>같은 번호만 입력하면 방문이 자동으로 기록돼요. 등록은 한 번이면 충분해요.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 화면 3B : 방문 기록 완료 ===== -->
+  <section class="view" id="v-done-checkin">
+    <div class="done">
+      <div class="done-ic">
+        <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="#191919" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2>방문이 기록됐어요</h2>
+      <p>오늘도 찾아주셔서 감사해요. 다음에 또 만나요!</p>
+      <div class="next">
+        <b>잠시 후</b> 화면을 닫으셔도 돼요. 방문 기록은 매장에 안전하게 저장됐어요.
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var SUPABASE_URL = 'https://kpehpjjthevmkirjmekn.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZWhwamp0aGV2bWtpcmptZWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTM4NjMsImV4cCI6MjA5NzI2OTg2M30.xxyDWHkq1FDdoF_X-VhBjmqBAsTmUqRb5GHyGEuvnVw';
+  var state = { storeId:null, storeName:'우리 매장', phone:null, customer:null };
+
+  function getStoreId(){
+    var q = new URLSearchParams(location.search).get('store_id');
+    if(q) return q;
+    var m = location.pathname.match(/\/s\/([^\/?#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  async function rpc(name, body){
+    var res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + name, {
+      method:'POST',
+      headers:{
+        apikey:SUPABASE_ANON_KEY,
+        Authorization:'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(body || {})
+    });
+    var text = await res.text();
+    var data = text ? JSON.parse(text) : null;
+    if(!res.ok){
+      var msg = data && (data.message || data.error_description || data.hint);
+      throw new Error(msg || '요청을 처리하지 못했습니다.');
+    }
+    return data;
+  }
+
+  function setStoreName(name){
+    state.storeName = name || '우리 매장';
+    document.getElementById('store-name').textContent = state.storeName;
+    document.getElementById('dr-store').textContent = state.storeName;
+  }
+
+  function showExistingCustomer(customer){
+    state.customer = customer;
+    document.getElementById('ci-name').textContent = customer.name;
+    var showVisitInfo = customer.last_visit_days !== null && customer.last_visit_days !== undefined;
+    document.getElementById('ci-last-row').style.display = showVisitInfo ? 'flex' : 'none';
+    document.getElementById('ci-count-row').style.display = showVisitInfo ? 'flex' : 'none';
+    if(showVisitInfo){
+      var days = Number(customer.last_visit_days);
+      document.getElementById('ci-last').textContent = days === 0 ? '오늘' : days + '일 전';
+      document.getElementById('ci-count').textContent = customer.next_visit_count;
+    }
+    show('v-checkin');
+  }
+
+  async function boot(){
+    state.storeId = getStoreId();
+    if(!state.storeId){
+      setStoreName('매장을 찾을 수 없어요');
+      startBtn.disabled = true;
+      toast('QR 링크가 올바르지 않습니다.');
+      return;
+    }
+    try{
+      var data = await rpc('customer_flow_lookup', { p_store_id:state.storeId, p_phone:null });
+      setStoreName(data.store_name);
+    }catch(e){
+      setStoreName('매장을 찾을 수 없어요');
+      startBtn.disabled = true;
+      toast(e.message || '매장 정보를 불러오지 못했습니다.');
+    }
+  }
+
+  var views = ['v-start','v-register','v-checkin','v-done-register','v-done-checkin'];
+  function show(id){
+    views.forEach(function(v){ document.getElementById(v).classList.toggle('on', v===id); });
+    var p = document.querySelector('.phone'); if(p) p.scrollTop = 0;
+    window.scrollTo({top:0});
+  }
+  function goStart(){ show('v-start'); }
+
+  /* 번호 입력 → 버튼 활성화 */
+  var phoneInp = document.getElementById('phone');
+  var startBtn = document.getElementById('startBtn');
+  phoneInp.addEventListener('input', function(){
+    this.value = this.value.replace(/[^0-9]/g,'');
+    startBtn.disabled = this.value.length < 10;
+  });
+
+  function fmtPhone(p){
+    if(p.length===11) return p.replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');
+    if(p.length===10) return p.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
+    return p;
+  }
+
+  /* 번호 조회 → 신규/기존 분기 */
+  async function lookup(){
+    var raw = phoneInp.value.trim();
+    if(raw.length < 10){ toast('휴대폰 번호를 정확히 입력해 주세요.'); return; }
+    startBtn.disabled = true;
+    state.phone = raw;
+    try{
+      var hit = await rpc('customer_flow_lookup', { p_store_id:state.storeId, p_phone:raw });
+      setStoreName(hit.store_name);
+      if(hit.mode === 'existing'){
+        showExistingCustomer(hit.customer);
+      } else {
+        state.customer = null;
+        document.getElementById('reg-phone').textContent = fmtPhone(raw);
+        show('v-register');
+      }
+    }catch(e){
+      toast(e.message || '번호 조회에 실패했습니다.');
+    }finally{
+      startBtn.disabled = phoneInp.value.length < 10;
+    }
+  }
+
+  /* 신규 등록 */
+  async function doRegister(){
+    var name = document.getElementById('name').value.trim();
+    if(!name){ toast('이름을 입력해 주세요.'); return; }
+    var consent = document.getElementById('reg-consent').checked;
+    var btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    try{
+      var data = await rpc('customer_flow_register', {
+        p_store_id:state.storeId,
+        p_phone:state.phone,
+        p_name:name,
+        p_marketing_agreed:consent
+      });
+      if(data.mode === 'existing'){
+        showExistingCustomer(data.customer);
+        return;
+      }
+      document.getElementById('dr-title').textContent = name + '님, 단골로 등록됐어요';
+      show('v-done-register');
+      toast(consent ? '단골 등록 완료 · 재방문 안내를 받아요.' : '단골 등록 완료');
+    }catch(e){
+      toast(e.message || '단골 등록에 실패했습니다.');
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  /* 방문 확인 */
+  async function doCheckin(){
+    var btn = document.getElementById('checkinBtn');
+    btn.disabled = true;
+    try{
+      await rpc('customer_flow_checkin', { p_store_id:state.storeId, p_phone:state.phone });
+      show('v-done-checkin');
+      toast('오늘 방문이 기록됐어요.');
+    }catch(e){
+      toast(e.message || '방문 기록에 실패했습니다.');
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  /* toast */
+  var tt;
+  function toast(m){
+    var t = document.getElementById('toast');
+    t.textContent = m; t.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+  }
+  boot();
+</script>
+</body>
+</html>
