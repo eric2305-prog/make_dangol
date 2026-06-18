@@ -26,7 +26,7 @@
   "rewrites": [
     {
       "source": "/s/:store_id",
-      "destination": "/customer.html"
+      "destination": "/customer"
     }
   ]
 }
