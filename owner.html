@@ -318,6 +318,7 @@
   /* ai queue */
   .queue{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
   .qmsg{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--tint)}
+  .qmsg.msg-focus{border-color:var(--kakao);box-shadow:0 0 0 3px rgba(254,229,0,.45)}
   .qmsg .qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .qmsg .qav{width:34px;height:34px;border-radius:50%;background:#EFEFEF;color:var(--ink-soft);
     display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
@@ -514,7 +515,7 @@
     </div>
     <ul class="menu">
       <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
-      <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 고객</button></li>
+      <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 관리</button></li>
       <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>오늘 보낼 메시지</button></li>
       <li><button onclick="scrollTo2('sentPanel')"><span class="mi">✓</span>보낸 메시지</button></li>
       <li><button onclick="scrollTo2('qrPanel')"><span class="mi">▦</span>매장 QR</button></li>
@@ -547,83 +548,83 @@
     <div class="kpis">
       <div class="kpi accent"><div class="kl">오늘 보낼 메시지</div><div class="kn">9<span class="u">건</span></div></div>
       <div class="kpi"><div class="kl">재방문 지난 고객</div><div class="kn">4<span class="u">명</span></div></div>
-      <div class="kpi"><div class="kl">이번 주 챙길 고객</div><div class="kn">28<span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 주 관리 추천</div><div class="kn">28<span class="u">명</span></div></div>
       <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn">14<span class="u">명</span></div></div>
     </div>
 
-    <!-- 이번 주 챙길 고객 -->
+    <!-- 재방문 관리 -->
     <div class="panel" id="visitPanel">
       <div class="panel-head">
-        <div><h2>이번 주 챙길 고객</h2><div class="sub">방문 주기를 기준으로 다시 연락하면 좋은 고객입니다.</div></div>
-        <span class="count">28명 대기</span>
+        <div><h2>재방문 관리</h2><div class="sub"><b style="color:var(--ink)">연락 추천 고객</b> · 다시 연락하면 좋은 고객을 모아봤어요.</div></div>
+        <span class="count">28명</span>
       </div>
       <table class="tbl">
         <thead>
           <tr><th>고객명</th><th>마지막 방문</th><th>다시 올 시점</th><th>상태</th><th>액션</th></tr>
         </thead>
         <tbody>
-          <tr>
+          <tr data-customer-id="c001">
             <td class="cell-cust"><div class="cust"><span class="av">김</span><span class="nm">김서연</span></div></td>
             <td data-l="마지막 방문">38일 전</td>
             <td data-l="예상 재방문">이번 주</td>
             <td data-l="상태"><span class="pill due">재방문 시기</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c002">
             <td class="cell-cust"><div class="cust"><span class="av">이</span><span class="nm">이준호</span></div></td>
             <td data-l="마지막 방문">24일 전</td>
             <td data-l="예상 재방문">3일 뒤</td>
             <td data-l="상태"><span class="pill soon">곧 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c003">
             <td class="cell-cust"><div class="cust"><span class="av">박</span><span class="nm">박지민</span></div></td>
             <td data-l="마지막 방문">31일 전</td>
             <td data-l="예상 재방문">오늘</td>
             <td data-l="상태"><span class="pill due">재방문 시기</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c004">
             <td class="cell-cust"><div class="cust"><span class="av">최</span><span class="nm">최은우</span></div></td>
             <td data-l="마지막 방문">19일 전</td>
             <td data-l="예상 재방문">5일 뒤</td>
             <td data-l="상태"><span class="pill ok">여유 있음</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c005">
             <td class="cell-cust"><div class="cust"><span class="av">정</span><span class="nm">정하늘</span></div></td>
             <td data-l="마지막 방문">42일 전</td>
             <td data-l="예상 재방문">지남</td>
             <td data-l="상태"><span class="pill due">재방문 시기</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c006">
             <td class="cell-cust"><div class="cust"><span class="av">윤</span><span class="nm">윤서진</span></div></td>
             <td data-l="마지막 방문">27일 전</td>
             <td data-l="예상 재방문">2일 뒤</td>
             <td data-l="상태"><span class="pill soon">곧 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c007">
             <td class="cell-cust"><div class="cust"><span class="av">강</span><span class="nm">강민재</span></div></td>
             <td data-l="마지막 방문">35일 전</td>
             <td data-l="예상 재방문">오늘</td>
             <td data-l="상태"><span class="pill due">재방문 시기</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c008">
             <td class="cell-cust"><div class="cust"><span class="av">한</span><span class="nm">한지우</span></div></td>
             <td data-l="마지막 방문">22일 전</td>
             <td data-l="예상 재방문">4일 뒤</td>
             <td data-l="상태"><span class="pill soon">곧 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
-          <tr>
+          <tr data-customer-id="c009">
             <td class="cell-cust"><div class="cust"><span class="av">오</span><span class="nm">오세라</span></div></td>
             <td data-l="마지막 방문">16일 전</td>
             <td data-l="예상 재방문">6일 뒤</td>
             <td data-l="상태"><span class="pill ok">여유 있음</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="scrollQueue()">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
+            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
           </tr>
         </tbody>
       </table>
@@ -637,7 +638,7 @@
       </div>
       <div class="notice"><span class="ni">🔔</span><span>자동 발송되지 않습니다. 확인 후 ‘이 메시지 보내기’를 눌러야 발송됩니다.</span></div>
       <div class="queue">
-        <div class="qmsg" id="q1">
+        <div class="qmsg" id="q1" data-customer-id="c001">
           <div class="qtop"><span class="qav">김</span><span class="qwho"><b>김서연</b> <span>· 마지막 방문 38일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">서연님, 지난번 컬러 잘 유지되고 계신가요? 보통 이맘때 리터치를 많이 받으세요. 이번 주 예약 도와드릴까요?</div>
           <div class="qbooking">
@@ -651,7 +652,7 @@
             <button class="btn-mini" onclick="laterMsg('q1')">나중에</button>
           </div>
         </div>
-        <div class="qmsg" id="q2">
+        <div class="qmsg" id="q2" data-customer-id="c003">
           <div class="qtop"><span class="qav">박</span><span class="qwho"><b>박지민</b> <span>· 마지막 방문 31일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">지민님, 한 달쯤 지났네요! 다음 방문 때 쓰실 수 있는 단골 혜택을 안내드리려고요. 편하신 시간 알려주시면 예약 잡아드릴게요.</div>
           <div class="qbooking">
@@ -665,7 +666,7 @@
             <button class="btn-mini" onclick="laterMsg('q2')">나중에</button>
           </div>
         </div>
-        <div class="qmsg" id="q3">
+        <div class="qmsg" id="q3" data-customer-id="c005">
           <div class="qtop"><span class="qav">정</span><span class="qwho"><b>정하늘</b> <span>· 마지막 방문 42일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">하늘님, 오랜만이에요! 그동안 머릿결 어떠셨어요? 이번 주에 오시면 트리트먼트 한 번 챙겨드릴게요. 예약 도와드릴까요?</div>
           <div class="qbooking">
@@ -679,7 +680,7 @@
             <button class="btn-mini" onclick="laterMsg('q3')">나중에</button>
           </div>
         </div>
-        <div class="qmsg" id="q4">
+        <div class="qmsg" id="q4" data-customer-id="c007">
           <div class="qtop"><span class="qav">강</span><span class="qwho"><b>강민재</b> <span>· 마지막 방문 35일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">민재님, 보통 이맘때 커트하러 많이 오세요. 이번 주말 자리 비어 있는데 미리 잡아드릴까요?</div>
           <div class="qbooking">
@@ -693,7 +694,7 @@
             <button class="btn-mini" onclick="laterMsg('q4')">나중에</button>
           </div>
         </div>
-        <div class="qmsg" id="q5">
+        <div class="qmsg" id="q5" data-customer-id="c002">
           <div class="qtop"><span class="qav">이</span><span class="qwho"><b>이준호</b> <span>· 마지막 방문 24일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">준호님, 지난번 스타일 잘 어울리셨어요! 다음 손질 시기쯤 됐는데 편하신 날 알려주시면 예약 맞춰드릴게요.</div>
           <div class="qbooking">
@@ -707,7 +708,7 @@
             <button class="btn-mini" onclick="laterMsg('q5')">나중에</button>
           </div>
         </div>
-        <div class="qmsg" id="q6">
+        <div class="qmsg" id="q6" data-customer-id="c006">
           <div class="qtop"><span class="qav">윤</span><span class="qwho"><b>윤서진</b> <span>· 마지막 방문 27일 전</span></span><span class="qtag">AI 제안</span></div>
           <div class="qbody">서진님, 곧 뿌리 염색 시기예요. 원하시면 지난번과 같은 컬러로 미리 예약 잡아드릴게요. 편하신 시간 있으세요?</div>
           <div class="qbooking">
@@ -884,6 +885,26 @@
   function scrollQueue(){
     scrollTo2('queuePanel');
   }
+  function goToMsg(btn){
+    var row = btn ? btn.closest('tr') : null;
+    var customerId = row ? row.getAttribute('data-customer-id') : '';
+    var target = null;
+    document.querySelectorAll('#queuePanel .qmsg').forEach(function(card){
+      if(card.getAttribute('data-customer-id') === customerId) target = card;
+    });
+    if(target){
+      toggleSide(false);
+      document.querySelectorAll('#queuePanel .qmsg').forEach(function(card){
+        card.classList.remove('msg-focus');
+      });
+      target.scrollIntoView({behavior:'smooth', block:'center'});
+      target.classList.add('msg-focus');
+      setTimeout(function(){ target.classList.remove('msg-focus'); }, 1500);
+      return;
+    }
+    scrollTo2('queuePanel');
+    toast('잠시 후 준비돼요. 해당 고객의 AI 메시지가 준비되면 여기에서 확인할 수 있습니다.');
+  }
   function scrollTo2(id){
     var p = document.getElementById(id);
     if(!p) return;
@@ -1032,7 +1053,7 @@
       store_id: 'store_demo',
       type: 'daily_task_summary',
       title: '오늘 챙길 단골 업무가 정리됐어요',
-      body: '이번 주 챙길 고객 28명, 오늘 보낼 메시지 9건이 준비돼 있어요.',
+      body: '이번 주 관리 추천 고객 28명, 오늘 보낼 메시지 9건이 준비돼 있어요.',
       payload: { visit_due: 28, pending_msg: 9 },
       target_url: '/dashboard',
       channel: 'kakao',
