@@ -214,6 +214,57 @@
 
   .lead-line{font-size:1.06rem;font-weight:700;color:var(--ink);margin:18px 0 18px}
 
+  /* ===== today tasks ===== */
+  .today-tasks-card{width:100%;display:flex;align-items:center;gap:14px;text-align:left;
+    border:1px solid #FFF6C7;background:#FFFBE6;border-radius:16px;padding:16px 18px;
+    margin:18px 0 18px;box-shadow:0 1px 2px rgba(25,25,25,.05);cursor:pointer;
+    transition:transform .15s ease,box-shadow .2s ease}
+  .today-tasks-card:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(25,25,25,.08)}
+  .today-tasks-card .bell{flex:none;width:42px;height:42px;border-radius:12px;background:#FEE500;
+    color:#191919;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+  .today-tasks-card .copy{flex:1;min-width:0}
+  .today-tasks-card b{display:flex;align-items:center;gap:8px;font-size:1.02rem;font-weight:700;color:#191919}
+  .today-tasks-card .badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
+    padding:0 7px;border-radius:999px;font-size:.78rem;font-weight:800;background:#E0483C;color:#fff}
+  .today-tasks-card .badge.zero{background:#ECECEC;color:#767676}
+  .today-tasks-card .preview{display:block;margin-top:2px;font-size:.88rem;color:#3C3C3C;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .today-tasks-card .more{flex:none;font-size:.9rem;font-weight:700;color:#B8860B}
+  .today-tasks-overlay{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+    background:rgba(25,25,25,.45);padding:20px}
+  .today-tasks-overlay.open{display:flex}
+  .today-tasks-modal{width:100%;max-width:440px;max-height:90vh;overflow:auto;border-radius:22px;background:#fff;
+    box-shadow:0 26px 60px rgba(25,25,25,.14)}
+  .today-tasks-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:20px 22px 16px;
+    border-bottom:1px solid #ECECEC}
+  .today-tasks-head h3{font-size:1.16rem;font-weight:800;margin:0}
+  .today-tasks-head .date{margin-top:2px;font-size:.82rem;font-weight:600;color:#767676}
+  .today-tasks-close{flex:none;width:34px;height:34px;border-radius:9px;border:1px solid #ECECEC;background:#fff;
+    color:#767676;font-size:1.1rem;line-height:1;cursor:pointer}
+  .today-tasks-close:hover{border-color:#191919;color:#191919;background:#FAFAF8}
+  .today-tasks-body{padding:20px 22px}
+  .today-tasks-list{display:flex;flex-direction:column;gap:10px}
+  .today-task-item{display:flex;gap:12px;align-items:flex-start;border:1px solid #ECECEC;background:#fff;
+    border-radius:13px;padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+  .today-task-item:hover{border-color:#D6D6D6;background:#FAFAF8}
+  .today-task-item.read{background:#FAFAF8;border-color:#F2F2F2}
+  .today-task-dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px;background:#E0483C}
+  .today-task-item.read .today-task-dot{background:#3F8E45}
+  .today-task-main{flex:1;min-width:0}
+  .today-task-chip{display:inline-block;margin-bottom:6px;font-size:.72rem;font-weight:800;color:#B8860B;
+    background:#FFF6D6;padding:2px 8px;border-radius:6px}
+  .today-task-title{font-size:.96rem;font-weight:700;color:#191919}
+  .today-task-body{margin-top:2px;font-size:.88rem;line-height:1.65;color:#3C3C3C}
+  .today-task-item.read .today-task-title,.today-task-item.read .today-task-body{color:#767676}
+  .today-task-meta{margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.76rem;color:#767676}
+  .today-task-meta .channel{border:1px solid #ECECEC;border-radius:6px;padding:1px 7px;font-weight:700}
+  .today-task-meta .checked{color:#3F8E45;font-weight:700}
+  .today-tasks-empty{padding:24px 0;text-align:center;font-size:.94rem;line-height:1.7;color:#767676}
+  .today-tasks-foot{padding:8px 22px 22px}
+  .today-tasks-readall{width:100%;border-radius:12px;border:1px solid #ECECEC;background:#fff;padding:15px;
+    font-size:1.06rem;font-weight:700;color:#191919;cursor:pointer}
+  .today-tasks-readall:hover{background:#FAFAF8}
+
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
   .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 16px;box-shadow:var(--shadow-sm)}
   .kpi .kl{font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
@@ -467,6 +518,8 @@
       </div>
       <span class="auto30"><span class="ck">✓</span>30일 자동 로그인 유지 중</span>
     </div>
+
+    <section id="todayTasks"></section>
 
     <p class="lead-line">오늘 보낼 메시지를 확인하고, 단골 고객을 다시 불러오세요.</p>
 
@@ -766,6 +819,7 @@
     screens.forEach(function(s){ document.getElementById(s).classList.remove('active'); });
     document.getElementById('screen-dash').classList.add('active');
     setToday();
+    renderTodayTasks();
     renderBooking();
     window.scrollTo({top:0, behavior:'auto'});
   }
@@ -804,6 +858,143 @@
     var el = document.getElementById(id);
     if(el){ el.style.opacity='.45'; }
     toast('나중에 보기로 옮겼습니다.');
+  }
+
+  /* ---------- today tasks mock data ---------- */
+  var NOTI_TYPE_LABEL = {
+    daily_task_summary: '오늘 업무 요약',
+    ai_message_review_required: 'AI 메시지 승인 필요',
+    inactive_customer_warning: '휴면 고객 주의'
+  };
+  var mockNotificationTasks = [
+    {
+      id: 'n1',
+      store_id: 'store_demo',
+      type: 'daily_task_summary',
+      title: '오늘 챙길 단골 업무가 정리됐어요',
+      body: '이번 주 챙길 고객 28명, 오늘 보낼 메시지 9건이 준비돼 있어요.',
+      payload: { visit_due: 28, pending_msg: 9 },
+      target_url: '/dashboard',
+      channel: 'kakao',
+      scheduled_for: '2026-06-18',
+      created_at: '2026-06-18T12:00:00+09:00',
+      sent_at: null,
+      read_at: null
+    },
+    {
+      id: 'n2',
+      store_id: 'store_demo',
+      type: 'ai_message_review_required',
+      title: '승인 기다리는 AI 메시지 9건',
+      body: 'AI가 준비한 재방문 메시지 9건이 승인을 기다리고 있어요. 확인 후 보내주세요.',
+      payload: { pending_msg: 9 },
+      target_url: '/dashboard#ai-messages',
+      channel: 'kakao',
+      scheduled_for: '2026-06-18',
+      created_at: '2026-06-18T12:00:00+09:00',
+      sent_at: null,
+      read_at: null
+    },
+    {
+      id: 'n3',
+      store_id: 'store_demo',
+      type: 'inactive_customer_warning',
+      title: '한동안 안 오신 고객 4명',
+      body: '재방문 시점이 지난 단골 4명이 있어요. 잊기 전에 먼저 연락해보세요.',
+      payload: { inactive: 4 },
+      target_url: '/dashboard#visit-list',
+      channel: 'kakao',
+      scheduled_for: '2026-06-18',
+      created_at: '2026-06-18T12:00:00+09:00',
+      sent_at: null,
+      read_at: null
+    }
+  ];
+  var todayTasks = mockNotificationTasks.map(function(task){ return Object.assign({}, task); });
+
+  function renderTodayTasks(){
+    var host = document.getElementById('todayTasks');
+    if(!host) return;
+    var unread = todayTasks.filter(function(t){ return !t.read_at; }).length;
+    var preview = '오늘은 챙길 일이 없어요.';
+    if(todayTasks.length && unread === 0) preview = '오늘 할 일을 모두 확인했어요.';
+    if(todayTasks.length && unread > 0) preview = todayTasks.find(function(t){ return !t.read_at; }).title;
+    var todayLabel = document.getElementById('today') ? document.getElementById('today').textContent : '오늘';
+    host.innerHTML =
+      '<button type="button" class="today-tasks-card" onclick="openTodayTasks()">' +
+        '<span class="bell">🔔</span>' +
+        '<span class="copy"><b>오늘 할 일 <span class="badge '+(unread === 0 ? 'zero' : '')+'">'+unread+'</span></b>' +
+        '<span class="preview">'+escapeHtml(preview)+'</span></span>' +
+        '<span class="more">자세히 ›</span>' +
+      '</button>' +
+      '<div class="today-tasks-overlay" id="todayTasksOverlay" onclick="todayTasksBackdrop(event)">' +
+        '<div class="today-tasks-modal" role="dialog" aria-modal="true" aria-labelledby="todayTasksTitle">' +
+          '<div class="today-tasks-head"><div><h3 id="todayTasksTitle">오늘 할 일</h3>' +
+          '<div class="date">'+escapeHtml(todayLabel)+' · 낮 12시 생성</div></div>' +
+          '<button type="button" class="today-tasks-close" onclick="closeTodayTasks()" aria-label="닫기">✕</button></div>' +
+          '<div class="today-tasks-body">'+renderTodayTasksBody()+'</div>' +
+          renderTodayTasksFoot(unread) +
+        '</div>' +
+      '</div>';
+  }
+  function renderTodayTasksBody(){
+    if(todayTasks.length === 0){
+      return '<div class="today-tasks-empty">오늘은 따로 챙길 일이 없습니다. 좋은 하루 보내세요!</div>';
+    }
+    return '<div class="today-tasks-list">' + todayTasks.map(function(task){
+      var read = !!task.read_at;
+      return '<div class="today-task-item '+(read ? 'read' : '')+'" onclick="handleTodayTaskClick(\''+task.id+'\')">' +
+        '<span class="today-task-dot"></span>' +
+        '<div class="today-task-main">' +
+          '<span class="today-task-chip">'+escapeHtml(NOTI_TYPE_LABEL[task.type])+'</span>' +
+          '<div class="today-task-title">'+escapeHtml(task.title)+'</div>' +
+          '<div class="today-task-body">'+escapeHtml(task.body)+'</div>' +
+          '<div class="today-task-meta"><span>낮 12시 생성</span>' +
+            '<span class="channel">채널 '+escapeHtml(task.channel)+'</span>' +
+            (read ? '<span class="checked">✓ 확인함</span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+  function renderTodayTasksFoot(unread){
+    if(todayTasks.length === 0 || unread === 0) return '';
+    return '<div class="today-tasks-foot"><button type="button" class="today-tasks-readall" onclick="markAllTodayTasksRead()">모두 읽음 처리</button></div>';
+  }
+  function openTodayTasks(){
+    var overlay = document.getElementById('todayTasksOverlay');
+    if(overlay){ overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  }
+  function closeTodayTasks(){
+    var overlay = document.getElementById('todayTasksOverlay');
+    if(overlay){ overlay.classList.remove('open'); document.body.style.overflow = ''; }
+  }
+  function todayTasksBackdrop(e){
+    if(e.target === e.currentTarget) closeTodayTasks();
+  }
+  function handleTodayTaskClick(id){
+    var task = todayTasks.find(function(t){ return t.id === id; });
+    if(!task) return;
+    if(!task.read_at) task.read_at = new Date().toISOString();
+    renderTodayTasks();
+    openTodayTasks();
+    navigateTodayTask(task.target_url);
+  }
+  function markAllTodayTasksRead(){
+    var now = new Date().toISOString();
+    todayTasks = todayTasks.map(function(t){ return t.read_at ? t : Object.assign({}, t, { read_at: now }); });
+    renderTodayTasks();
+    openTodayTasks();
+  }
+  function navigateTodayTask(url){
+    if(url.indexOf('#ai-messages') >= 0) scrollTo2('queuePanel');
+    else if(url.indexOf('#visit-list') >= 0) scrollTo2('visitPanel');
+    else window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, function(ch){
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
+    });
   }
 
   /* ---------- 예약 링크 / 매장 설정 ---------- */
@@ -865,7 +1056,7 @@
     toast('고객정보가 수정되었습니다.');
   }
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') closeEdit();
+    if(e.key === 'Escape'){ closeEdit(); closeTodayTasks(); }
   });
   function toggleSide(open){
     var s = document.getElementById('side'), b = document.getElementById('sideBackdrop');
