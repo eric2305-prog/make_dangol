@@ -90,6 +90,29 @@ AI 메시지 초안 또는 발송 대기열입니다.
 - `error_message`: 실패 사유
 - `created_at`: 생성 시각
 
+### notification_tasks
+
+점주 관리자 상단의 `오늘 할 일` 알림입니다.
+
+- `id`: 알림 ID
+- `store_id`: 매장 ID
+- `type`: `daily_task_summary`, `ai_message_review_required`, `inactive_customer_warning`
+- `title`: 알림 제목
+- `body`: 알림 내용
+- `payload`: 관련 숫자 데이터
+- `target_url`: 클릭 시 이동할 관리자 화면 위치
+- `channel`: `none`, `kakao`
+- `scheduled_for`: 알림 기준 날짜
+- `created_at`: 생성 시각
+- `sent_at`: 외부 발송 시각
+- `read_at`: 점주 확인 시각
+
+중복 방지 기준:
+
+```text
+unique(store_id, type, scheduled_for)
+```
+
 ## RLS
 
 모든 테이블은 RLS를 켭니다.
@@ -99,6 +122,8 @@ AI 메시지 초안 또는 발송 대기열입니다.
 - 점주는 본인 매장 데이터만 조회합니다.
 - 고객 QR 등록처럼 공개 화면에서 쓰는 데이터 변경은 프론트에서 직접 테이블에 쓰지 않습니다.
 - 고객 등록, 방문 추가, 메시지 대기열 생성은 이후 Supabase Edge Function에서 처리합니다.
+- `notification_tasks`는 본인 매장 알림만 조회합니다.
+- `notification_tasks.read_at` 변경은 `mark_notification_read` RPC로만 처리합니다.
 
 ## Migration File
 
@@ -106,4 +131,17 @@ AI 메시지 초안 또는 발송 대기열입니다.
 
 ```text
 supabase/migrations/001_initial_schema.sql
+```
+
+오늘 할 일 알림 스키마 검토 파일:
+
+```text
+supabase/migrations/002_notification_tasks.sql
+```
+
+주의:
+
+```text
+002_notification_tasks.sql은 아직 Supabase에 실행하지 않은 검토용 파일입니다.
+마이그레이션 적용 전 RLS와 인증 구조를 다시 확인해야 합니다.
 ```
