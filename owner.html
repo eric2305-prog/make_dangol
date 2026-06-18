@@ -292,6 +292,23 @@
   .pill.due{background:var(--ink);color:#fff}
   .pill.soon{background:var(--y-tint-2);color:var(--brown)}
   .pill.ok{background:var(--green-tint);color:var(--green)}
+  .sent-tabs{display:flex;gap:8px;margin:0 20px 18px;flex-wrap:wrap}
+  .sent-tab{font-size:.9rem;font-weight:700;padding:9px 16px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;color:var(--ink-soft);cursor:pointer;transition:all .15s;white-space:nowrap}
+  .sent-tab:hover{border-color:var(--ink)}
+  .sent-tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sent-tab .c{font-weight:800;margin-left:5px;opacity:.7}
+  .msg-prev{color:var(--ink-soft);max-width:380px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .when{color:var(--muted);font-size:.9rem;white-space:nowrap}
+  .pill.sent{background:var(--green-tint);color:var(--green);display:inline-flex;align-items:center;gap:5px}
+  .pill.fail{background:#FDECEC;color:#C0453B;display:inline-flex;align-items:center;gap:5px}
+  .pill.sent i,.pill.fail i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+  .fail-reason{display:block;font-size:.78rem;color:#C0453B;margin-top:4px;font-weight:600}
+  .sent-empty{padding:54px 20px;text-align:center;color:var(--muted)}
+  .sent-empty .ei{font-size:2rem;margin-bottom:10px}
+  .sent-empty b{display:block;color:var(--ink-soft);font-size:1rem;font-weight:800;margin-bottom:5px}
+  .foot-note{font-size:.82rem;color:var(--muted);margin:14px 20px 20px;line-height:1.55;
+    background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
   .btn-mini{font-size:.84rem;font-weight:700;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
     background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap;transition:all .15s}
   .btn-mini:hover{border-color:var(--ink);background:var(--tint)}
@@ -414,6 +431,8 @@
     .tbl td.cell-cust{padding-top:0}
     .tbl td .btn-mini{width:100%}
     .tbl td[data-l="액션"]{flex-direction:column;align-items:stretch;gap:8px}
+    .msg-prev{max-width:62%;white-space:normal;text-align:right;font-size:.9rem}
+    .sent-result-cell{align-items:flex-start!important}
     .qr-panel{justify-content:center}
     .topbar .tt h1{font-size:1.3rem}
   }
@@ -496,7 +515,8 @@
     <ul class="menu">
       <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
       <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 고객</button></li>
-      <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>AI 메시지</button></li>
+      <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>오늘 보낼 메시지</button></li>
+      <li><button onclick="scrollTo2('sentPanel')"><span class="mi">✓</span>보낸 메시지</button></li>
       <li><button onclick="scrollTo2('qrPanel')"><span class="mi">▦</span>매장 QR</button></li>
       <li><button onclick="scrollTo2('settingsPanel')"><span class="mi">⚙</span>매장 설정</button></li>
       <div class="sep"></div>
@@ -704,6 +724,31 @@
       </div>
     </div>
 
+    <!-- 보낸 메시지 -->
+    <div class="panel" id="sentPanel">
+      <div class="panel-head">
+        <div><h2>보낸 메시지</h2><div class="sub">고객에게 실제로 나간 메시지와 결과를 확인하세요.</div></div>
+        <span class="count" id="sentRowCount">0건</span>
+      </div>
+      <div class="sent-tabs">
+        <button class="sent-tab on" data-filter="all" onclick="filterSentMessages('all',this)">전체<span class="c" id="sentCountAll">0</span></button>
+        <button class="sent-tab" data-filter="sent" onclick="filterSentMessages('sent',this)">성공<span class="c" id="sentCountSuccess">0</span></button>
+        <button class="sent-tab" data-filter="fail" onclick="filterSentMessages('fail',this)">실패<span class="c" id="sentCountFail">0</span></button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>고객명</th><th>보낸 메시지</th><th>보낸 날짜·시간</th><th>결과</th></tr>
+        </thead>
+        <tbody id="sentRows"></tbody>
+      </table>
+      <div class="sent-empty" id="sentEmpty" hidden>
+        <div class="ei">💬</div>
+        <b>아직 보낸 메시지가 없어요</b>
+        <span>메시지를 보내면 이곳에 발송 결과가 표시됩니다.</span>
+      </div>
+      <p class="foot-note">메시지가 실패하면 보통 고객이 수신을 거부했거나 번호가 바뀐 경우예요. 번호가 틀린 것 같으면 ‘챙길 고객’에서 해당 고객의 정보를 수정해 주세요.</p>
+    </div>
+
     <!-- 우리 매장 QR -->
     <div class="panel" id="qrPanel">
       <div class="panel-head"><div><h2>우리 매장 QR</h2></div></div>
@@ -821,6 +866,7 @@
     setToday();
     renderTodayTasks();
     renderBooking();
+    renderSentMessages();
     window.scrollTo({top:0, behavior:'auto'});
   }
   function setToday(){
@@ -850,6 +896,7 @@
     var el = document.getElementById(id);
     var chk = el ? el.querySelector('.qbk-check') : null;
     var withLink = !!bookingLink && chk && chk.checked && !chk.disabled;
+    recordSentMessage(el, 'sent');
     if(el){ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(20px)';
       setTimeout(function(){ el.remove(); }, 300); }
     toast(withLink ? '예약 링크를 포함해 메시지를 보냈습니다.' : '메시지를 보냈습니다.');
@@ -858,6 +905,119 @@
     var el = document.getElementById(id);
     if(el){ el.style.opacity='.45'; }
     toast('나중에 보기로 옮겼습니다.');
+  }
+
+  /* ---------- 보낸 메시지 mock data ---------- */
+  var SENT_STORAGE_KEY = 'revaroOwnerSentMessages';
+  var sentFilter = 'all';
+  var sentMessages = loadSentMessages();
+
+  function baseSentMessages(){
+    return [
+      {
+        id:'sent_seed_1',
+        customerName:'김서연',
+        message:'서연님, 지난번 컬러 잘 유지되고 계신가요? 이번 주 예약 도와드릴까요?',
+        sentAt:new Date(Date.now() - 1000 * 60 * 18).toISOString(),
+        result:'sent'
+      },
+      {
+        id:'sent_seed_2',
+        customerName:'최은우',
+        message:'은우님, 한 달쯤 지났네요! 다음 방문 때 편하게 안내드릴게요.',
+        sentAt:new Date(Date.now() - 1000 * 60 * 49).toISOString(),
+        result:'fail',
+        reason:'수신 거부된 번호'
+      },
+      {
+        id:'sent_seed_3',
+        customerName:'박지민',
+        message:'지민님, 첫 방문 감사합니다! 다음 관리 시점에 맞춰 안내드릴게요.',
+        sentAt:new Date(Date.now() - 1000 * 60 * 60 * 25).toISOString(),
+        result:'sent'
+      },
+      {
+        id:'sent_seed_4',
+        customerName:'윤서진',
+        message:'서진님, 곧 뿌리 염색 시기예요. 지난번과 같은 컬러로 예약 잡아드릴까요?',
+        sentAt:new Date(Date.now() - 1000 * 60 * 60 * 44).toISOString(),
+        result:'fail',
+        reason:'이번 달 발송 한도 초과'
+      }
+    ];
+  }
+  function loadSentMessages(){
+    try{
+      var saved = JSON.parse(localStorage.getItem(SENT_STORAGE_KEY) || 'null');
+      if(Array.isArray(saved)) return saved;
+    }catch(e){}
+    return baseSentMessages();
+  }
+  function saveSentMessages(){
+    try{ localStorage.setItem(SENT_STORAGE_KEY, JSON.stringify(sentMessages)); }catch(e){}
+  }
+  function recordSentMessage(card, result, reason){
+    if(!card) return;
+    var customer = card.querySelector('.qwho b');
+    var body = card.querySelector('.qbody');
+    sentMessages.unshift({
+      id:'sent_' + Date.now(),
+      customerName:customer ? customer.textContent.trim() : '고객',
+      message:body ? body.textContent.trim() : '',
+      sentAt:new Date().toISOString(),
+      result:result || 'sent',
+      reason:reason || ''
+    });
+    saveSentMessages();
+    renderSentMessages();
+  }
+  function filterSentMessages(kind, btn){
+    sentFilter = kind;
+    document.querySelectorAll('.sent-tab').forEach(function(tab){ tab.classList.remove('on'); });
+    if(btn) btn.classList.add('on');
+    renderSentMessages();
+  }
+  function renderSentMessages(){
+    var rowsEl = document.getElementById('sentRows');
+    if(!rowsEl) return;
+    sentMessages.sort(function(a,b){ return new Date(b.sentAt) - new Date(a.sentAt); });
+    var all = sentMessages.length;
+    var sent = sentMessages.filter(function(m){ return m.result === 'sent'; }).length;
+    var fail = sentMessages.filter(function(m){ return m.result === 'fail'; }).length;
+    document.getElementById('sentCountAll').textContent = all;
+    document.getElementById('sentCountSuccess').textContent = sent;
+    document.getElementById('sentCountFail').textContent = fail;
+    var rows = sentMessages.filter(function(m){ return sentFilter === 'all' || m.result === sentFilter; });
+    document.getElementById('sentRowCount').textContent = rows.length + '건';
+    document.querySelectorAll('.sent-tab').forEach(function(tab){
+      tab.classList.toggle('on', tab.getAttribute('data-filter') === sentFilter);
+    });
+    document.getElementById('sentEmpty').hidden = rows.length !== 0;
+    rowsEl.innerHTML = rows.map(function(m){
+      var failed = m.result === 'fail';
+      return '<tr data-r="'+escapeHtml(m.result)+'">' +
+        '<td class="cell-cust"><div class="cust"><span class="av">'+escapeHtml(firstChar(m.customerName))+'</span><span class="nm">'+escapeHtml(m.customerName)+'</span></div></td>' +
+        '<td data-l="보낸 메시지"><span class="msg-prev">'+escapeHtml(m.message)+'</span></td>' +
+        '<td data-l="보낸 날짜·시간"><span class="when">'+escapeHtml(formatSentAt(m.sentAt))+'</span></td>' +
+        '<td data-l="결과" class="sent-result-cell"><span class="pill '+(failed ? 'fail' : 'sent')+'"><i></i>'+(failed ? '실패' : '성공')+'</span>' +
+          (failed ? '<span class="fail-reason">'+escapeHtml(m.reason || '발송 실패')+'</span>' : '') +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+  function firstChar(value){
+    return String(value || '고').trim().charAt(0) || '고';
+  }
+  function formatSentAt(value){
+    var d = new Date(value);
+    if(isNaN(d.getTime())) return value || '-';
+    var now = new Date();
+    var dDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    var nDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var hm = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    if(dDay === nDay) return '오늘 ' + hm;
+    if(dDay === nDay - 86400000) return '어제 ' + hm;
+    return String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0') + ' ' + hm;
   }
 
   /* ---------- today tasks mock data ---------- */
