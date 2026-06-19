@@ -25,6 +25,10 @@
   ],
   "rewrites": [
     {
+      "source": "/register",
+      "destination": "/customer"
+    },
+    {
       "source": "/s/:store_id",
       "destination": "/customer"
     }

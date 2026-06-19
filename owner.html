@@ -350,13 +350,15 @@
 
   /* qr panel */
   .qr-panel{display:flex;gap:22px;align-items:center;padding:20px;flex-wrap:wrap}
-  .qr-big{width:140px;height:140px;border-radius:16px;background:#fff;border:1px solid var(--line);
-    flex:none;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:3px;padding:12px;
-    box-shadow:var(--shadow-sm)}
-  .qr-big i{background:var(--ink);border-radius:2px}
-  .qr-big i.o{background:transparent}
+  .qr-big{width:180px;height:180px;border-radius:12px;background:#fff;border:1px solid var(--line);
+    flex:none;display:flex;align-items:center;justify-content:center;padding:10px;box-shadow:var(--shadow-sm)}
+  .qr-big img{display:block;width:100%;height:100%;object-fit:contain}
   .qr-info{flex:1;min-width:220px}
   .qr-info p{font-size:.94rem;color:var(--ink-soft);line-height:1.6;margin-bottom:14px}
+  .qr-details{margin-bottom:16px;border-top:1px solid var(--line-soft)}
+  .qr-detail{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:.9rem}
+  .qr-detail .k{color:var(--muted);font-weight:600}
+  .qr-detail .v{color:var(--ink);font-weight:700;min-width:0;overflow-wrap:anywhere}
   .qr-info .qbtns{display:flex;gap:10px;flex-wrap:wrap}
 
   /* notice (no auto send) */
@@ -452,19 +454,19 @@
     </div>
     <div class="auth-card">
       <h1 class="auth-h">점주 관리자 로그인</h1>
-      <p class="auth-desc">승인 안내 문자로 받은 임시 PIN 또는 설정한 개인 PIN으로 로그인하세요.</p>
+      <p class="auth-desc">승인 안내 문자로 받은 매장코드와 6자리 PIN으로 로그인하세요.</p>
 
       <div class="field">
-        <label>휴대폰 번호</label>
-        <input class="input" id="lg-phone" inputmode="numeric" placeholder="01012345678">
+        <label>매장코드</label>
+        <input class="input" id="lg-store" type="text" autocomplete="username" placeholder="예: test01">
       </div>
       <div class="field">
         <label>6자리 PIN</label>
-        <input class="input pin" id="lg-pin" inputmode="numeric" maxlength="6" placeholder="••••••">
+        <input class="input pin" id="lg-pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="••••••">
       </div>
 
-      <button class="btn btn-primary btn-lg btn-block" onclick="doLogin()">관리자 화면 들어가기</button>
-      <p class="helper">처음 로그인하시는 경우, 문자로 받은 임시 PIN을 입력해 주세요.</p>
+      <button class="btn btn-primary btn-lg btn-block" id="loginBtn" onclick="doLogin()">관리자 화면 들어가기</button>
+      <p class="helper">매장코드와 PIN은 운영자가 승인 후 안내합니다.</p>
 
       <div class="info-card">
         <h4><span class="ic">i</span>매번 인증번호를 받지 않아도 됩니다</h4>
@@ -518,7 +520,7 @@
       <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 관리</button></li>
       <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>오늘 보낼 메시지</button></li>
       <li><button onclick="scrollTo2('sentPanel')"><span class="mi">✓</span>보낸 메시지</button></li>
-      <li><button onclick="scrollTo2('qrPanel')"><span class="mi">▦</span>매장 QR</button></li>
+      <li><button onclick="scrollTo2('qrPanel')"><span class="mi">▦</span>QR 관리</button></li>
       <li><button onclick="scrollTo2('settingsPanel')"><span class="mi">⚙</span>매장 설정</button></li>
       <div class="sep"></div>
       <li><button class="logout" onclick="logout()"><span class="mi">⏻</span>로그아웃</button></li>
@@ -546,23 +548,23 @@
 
     <!-- KPI -->
     <div class="kpis">
-      <div class="kpi accent"><div class="kl">오늘 보낼 메시지</div><div class="kn">9<span class="u">건</span></div></div>
-      <div class="kpi"><div class="kl">재방문 지난 고객</div><div class="kn">4<span class="u">명</span></div></div>
-      <div class="kpi"><div class="kl">이번 주 관리 추천</div><div class="kn">28<span class="u">명</span></div></div>
-      <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn">14<span class="u">명</span></div></div>
+      <div class="kpi accent"><div class="kl">오늘 보낼 메시지</div><div class="kn"><span id="owner-message-count">9</span><span class="u">건</span></div></div>
+      <div class="kpi"><div class="kl">재방문 지난 고객</div><div class="kn"><span id="owner-overdue-count">4</span><span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 주 관리 추천</div><div class="kn"><span id="owner-recommend-count">28</span><span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn"><span id="owner-new-count">14</span><span class="u">명</span></div></div>
     </div>
 
     <!-- 재방문 관리 -->
     <div class="panel" id="visitPanel">
       <div class="panel-head">
         <div><h2>재방문 관리</h2><div class="sub"><b style="color:var(--ink)">연락 추천 고객</b> · 다시 연락하면 좋은 고객을 모아봤어요.</div></div>
-        <span class="count">28명</span>
+        <span class="count" id="visitPanelCount">28명</span>
       </div>
       <table class="tbl">
         <thead>
           <tr><th>고객명</th><th>마지막 방문</th><th>예상 재방문 시점</th><th>상태</th><th>액션</th></tr>
         </thead>
-        <tbody>
+        <tbody id="visitRows">
           <tr data-customer-id="c001">
             <td class="cell-cust"><div class="cust"><span class="av">김</span><span class="nm">김서연</span></div></td>
             <td data-l="마지막 방문">38일 전</td>
@@ -750,23 +752,23 @@
       <p class="foot-note">메시지가 실패하면 보통 고객이 수신을 거부했거나 번호가 바뀐 경우예요. 번호가 틀린 것 같으면 ‘챙길 고객’에서 해당 고객의 정보를 수정해 주세요.</p>
     </div>
 
-    <!-- 우리 매장 QR -->
+    <!-- QR 관리 -->
     <div class="panel" id="qrPanel">
-      <div class="panel-head"><div><h2>우리 매장 QR</h2></div></div>
+      <div class="panel-head"><div><h2>QR 관리</h2><div class="sub">고객이 단골 등록할 수 있는 우리 매장 전용 QR입니다.</div></div></div>
       <div class="qr-panel">
         <div class="qr-big">
-          <i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i>
-          <i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i>
-          <i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i>
-          <i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i>
-          <i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i>
-          <i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i>
+          <img id="storeQrImage" alt="우리 매장 고객 등록 QR" width="160" height="160">
         </div>
         <div class="qr-info">
-          <p>고객이 QR을 찍고 휴대폰 번호를 입력하면 단골 명단에 등록됩니다. 카운터나 테이블에 붙여두세요.</p>
+          <div class="qr-details">
+            <div class="qr-detail"><span class="k">매장명</span><span class="v" id="qrStoreName">불러오는 중</span></div>
+            <div class="qr-detail"><span class="k">store_id</span><span class="v" id="qrStoreId">-</span></div>
+            <div class="qr-detail"><span class="k">고객 등록 링크</span><span class="v" id="qrRegistrationLink">-</span></div>
+          </div>
           <div class="qbtns">
-            <button class="btn btn-primary" onclick="toast('QR 다운로드 기능을 연결합니다.')">QR 다운로드</button>
-            <button class="btn btn-ghost" onclick="toast('인쇄용 안내문 화면을 연결합니다.')">인쇄용 안내문 보기</button>
+            <button class="btn btn-ghost" id="copyQrLinkBtn" onclick="copyRegistrationLink()">링크 복사</button>
+            <button class="btn btn-primary" id="downloadQrBtn" onclick="downloadStoreQr()">QR 다운로드</button>
+            <button class="btn btn-ghost" id="openRegistrationBtn" onclick="openRegistrationPage()">등록 화면 열기</button>
           </div>
         </div>
       </div>
@@ -840,28 +842,42 @@
   }
 
   /* ---------- login ---------- */
-  function doLogin(){
-    var phone = document.getElementById('lg-phone').value.trim();
+  async function doLogin(){
+    var storeId = document.getElementById('lg-store').value.trim().toLowerCase();
     var pin = document.getElementById('lg-pin').value.trim();
-    if(phone.length < 9){ toast('휴대폰 번호를 입력해 주세요.'); return; }
+    if(!/^[a-z0-9]+$/.test(storeId)){ toast('매장코드를 입력해 주세요.'); return; }
     if(pin.length !== 6){ toast('6자리 PIN을 입력해 주세요.'); return; }
-    /* 데모: 첫 로그인(임시 PIN) → PIN 변경 화면으로 안내 */
-    showScreen('screen-pin');
-    toast('임시 PIN으로 로그인했습니다. 새 PIN을 설정해 주세요.');
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    try{
+      var res = await fetch('/api/owner/login', {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({store_id:storeId, pin:pin})
+      });
+      var data = await res.json();
+      if(!res.ok) throw new Error(data.message || '매장코드 또는 PIN을 확인해 주세요.');
+      document.getElementById('lg-pin').value = '';
+      await enterDash();
+      toast('로그인했습니다.');
+    }catch(e){
+      toast(e.message || '로그인을 처리하지 못했습니다.');
+    }finally{
+      btn.disabled = false;
+    }
   }
 
   /* ---------- pin setup ---------- */
   function savePin(){
-    var a = document.getElementById('np-pin').value.trim();
-    var b = document.getElementById('np-pin2').value.trim();
-    if(a.length !== 6){ toast('새 6자리 PIN을 입력해 주세요.'); return; }
-    if(a !== b){ toast('두 PIN이 일치하지 않습니다.'); return; }
-    enterDash();
-    toast('새 PIN이 저장되었습니다. 환영합니다!');
+    showScreen('screen-login');
+    toast('PIN 변경은 운영자 확인 후 진행됩니다.');
   }
 
   /* ---------- dashboard ---------- */
-  function enterDash(){
+  async function enterDash(){
+    var loaded = await loadOwnerDashboard();
+    if(!loaded){ showScreen('screen-login'); return false; }
     screens.forEach(function(s){ document.getElementById(s).classList.remove('active'); });
     document.getElementById('screen-dash').classList.add('active');
     setToday();
@@ -869,6 +885,7 @@
     renderBooking();
     renderSentMessages();
     window.scrollTo({top:0, behavior:'auto'});
+    return true;
   }
   function setToday(){
     var d = new Date();
@@ -876,7 +893,10 @@
     document.getElementById('today').textContent =
       d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
   }
-  function logout(){
+  async function logout(){
+    try{
+      await fetch('/api/owner/logout', {method:'POST', credentials:'same-origin'});
+    }catch(e){}
     document.getElementById('screen-dash').classList.remove('active');
     toggleSide(false);
     showScreen('screen-login');
@@ -1177,6 +1197,145 @@
       return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch];
     });
   }
+  function setText(id, value){
+    var el = document.getElementById(id);
+    if(el) el.textContent = value;
+  }
+  function visitDaysLabel(days){
+    if(days === null || days === undefined) return '방문 없음';
+    var n = Number(days);
+    if(n === 0) return '오늘';
+    return n + '일 전';
+  }
+  function statusClass(kind){
+    if(kind === 'due') return 'due';
+    if(kind === 'soon') return 'soon';
+    return 'ok';
+  }
+  function renderOwnerCustomers(rows){
+    var body = document.getElementById('visitRows');
+    if(!body) return;
+    if(!rows || !rows.length){
+      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">등록된 고객이 없습니다.</td></tr>';
+      setText('visitPanelCount', '0명');
+      return;
+    }
+    body.innerHTML = rows.map(function(c){
+      var name = c.name || '고객';
+      var initial = name.charAt(0) || '고';
+      var phone = c.phone_masked || '';
+      var visitCount = Number(c.visit_count || 0);
+      var meta = [phone, visitCount ? visitCount + '회 방문' : '방문 기록 없음'].filter(Boolean).join(' · ');
+      var pillClass = statusClass(c.status_kind);
+      var pillLabel = c.status_label || '여유 있음';
+      var solid = c.status_kind === 'due' ? ' solid' : '';
+      return '<tr data-customer-id="'+escapeHtml(c.id || '')+'">' +
+        '<td class="cell-cust"><div class="cust"><span class="av">'+escapeHtml(initial)+'</span><span><span class="nm">'+escapeHtml(name)+'</span>' +
+        (meta ? '<span style="display:block;font-size:.78rem;color:var(--muted);margin-top:3px">'+escapeHtml(meta)+'</span>' : '') +
+        '</span></div></td>' +
+        '<td data-l="마지막 방문">'+escapeHtml(visitDaysLabel(c.last_visit_days))+'</td>' +
+        '<td data-l="예상 재방문 시점">'+escapeHtml(c.expected_revisit_label || '-')+'</td>' +
+        '<td data-l="상태"><span class="pill '+pillClass+'">'+escapeHtml(pillLabel)+'</span></td>' +
+        '<td data-l="액션"><button class="btn-mini'+solid+'" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>' +
+      '</tr>';
+    }).join('');
+    setText('visitPanelCount', rows.length + '명');
+  }
+  var ownerRegistrationUrl = '';
+  var ownerQrStoreId = '';
+
+  function renderQrManagement(store, registrationUrl){
+    ownerRegistrationUrl = registrationUrl || '';
+    ownerQrStoreId = store.store_id || store.store_code || '';
+    setText('qrStoreName', store.name || '-');
+    setText('qrStoreId', ownerQrStoreId || '-');
+    setText('qrRegistrationLink', ownerRegistrationUrl || '-');
+    var image = document.getElementById('storeQrImage');
+    if(image && ownerRegistrationUrl){
+      image.src = '/api/owner/qr?v=' + encodeURIComponent(ownerQrStoreId);
+    }
+  }
+
+  async function copyRegistrationLink(){
+    if(!ownerRegistrationUrl){ toast('등록 링크를 불러오지 못했습니다.'); return; }
+    try{
+      await navigator.clipboard.writeText(ownerRegistrationUrl);
+      toast('고객 등록 링크를 복사했습니다.');
+    }catch(e){
+      var input = document.createElement('textarea');
+      input.value = ownerRegistrationUrl;
+      input.setAttribute('readonly','');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      var copied = document.execCommand('copy');
+      input.remove();
+      toast(copied ? '고객 등록 링크를 복사했습니다.' : '링크를 복사하지 못했습니다.');
+    }
+  }
+
+  async function downloadStoreQr(){
+    if(!ownerRegistrationUrl){ toast('QR을 불러오지 못했습니다.'); return; }
+    try{
+      var res = await fetch('/api/owner/qr?download=1', {credentials:'same-origin'});
+      if(!res.ok) throw new Error('download failed');
+      var blob = await res.blob();
+      var blobUrl = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'revaro-' + ownerQrStoreId + '-qr.png';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 1000);
+      toast('QR 이미지를 다운로드했습니다.');
+    }catch(e){
+      toast('QR 이미지를 다운로드하지 못했습니다.');
+    }
+  }
+
+  function openRegistrationPage(){
+    if(!ownerRegistrationUrl){ toast('등록 링크를 불러오지 못했습니다.'); return; }
+    var link = document.createElement('a');
+    link.href = ownerRegistrationUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  async function loadOwnerDashboard(){
+    try{
+      var res = await fetch('/api/owner/dashboard', {
+        method:'GET',
+        credentials:'same-origin',
+        headers:{'Accept':'application/json'}
+      });
+      var response = await res.json();
+      if(!res.ok || !response.ok) return false;
+      var data = response.snapshot || {};
+      var store = data && data.store ? data.store : {};
+      var metrics = data && data.metrics ? data.metrics : {};
+      var rows = data && data.customers ? data.customers : [];
+      if(store.name){
+        var title = document.querySelector('.top h1');
+        var sideStore = document.querySelector('.side-store');
+        if(title) title.textContent = store.name;
+        if(sideStore) sideStore.textContent = store.name;
+      }
+      setText('owner-message-count', metrics.pending_messages || 0);
+      setText('owner-overdue-count', metrics.overdue_customers || 0);
+      setText('owner-recommend-count', metrics.recommended_customers || 0);
+      setText('owner-new-count', metrics.new_customers_this_month || 0);
+      renderOwnerCustomers(rows);
+      renderQrManagement(store, response.registration_url);
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
 
   /* ---------- 예약 링크 / 매장 설정 ---------- */
   var bookingLink = 'https://booking.naver.com/example';
@@ -1270,6 +1429,7 @@
   document.querySelectorAll('input[inputmode="numeric"]').forEach(function(inp){
     inp.addEventListener('input', function(){ this.value = this.value.replace(/[^0-9]/g,''); });
   });
+  enterDash();
 </script>
 </body>
 </html>

@@ -26,10 +26,10 @@
   button{font-family:inherit}
 
   /* ===== 모바일 셸 ===== */
-  .phone{max-width:440px;margin:0 auto;min-height:100vh;background:#fff;
+  .phone{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;background:#fff;
     display:flex;flex-direction:column;position:relative;
     box-shadow:0 0 0 1px var(--line)}
-  @media(min-width:480px){ .phone{min-height:100vh;border-left:1px solid var(--line);border-right:1px solid var(--line)} body{padding:0} }
+  @media(min-width:480px){ .phone{min-height:100vh;min-height:100dvh;border-left:1px solid var(--line);border-right:1px solid var(--line)} body{padding:0} }
 
   /* 매장 헤더 */
   .store-bar{display:flex;align-items:center;gap:9px;padding:16px 20px;border-bottom:1px solid var(--line-soft);
@@ -40,6 +40,7 @@
   /* 화면 전환 */
   .view{display:none;flex:1;flex-direction:column;padding:30px 22px 24px;animation:fade .25s ease}
   .view.on{display:flex}
+  .view.done-view{min-height:calc(100dvh - 73px);padding:calc(34px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom))}
   @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
   .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:#B8860B;
@@ -93,6 +94,7 @@
 
   /* 완료 */
   .done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 0}
+  .done-view .done{min-height:calc(100dvh - 73px - 62px);justify-content:center;padding:26px 0 34px}
   .done-ic{width:88px;height:88px;border-radius:50%;background:var(--kakao);margin-bottom:22px;
     display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px rgba(254,229,0,.5);animation:pop .4s ease}
   @keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
@@ -209,7 +211,7 @@
   </section>
 
   <!-- ===== 화면 3A : 등록 완료 ===== -->
-  <section class="view" id="v-done-register">
+  <section class="view done-view" id="v-done-register">
     <div class="done">
       <div class="done-ic">
         <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="#191919" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -223,13 +225,13 @@
   </section>
 
   <!-- ===== 화면 3B : 방문 기록 완료 ===== -->
-  <section class="view" id="v-done-checkin">
+  <section class="view done-view" id="v-done-checkin">
     <div class="done">
       <div class="done-ic">
         <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="#191919" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <h2>방문이 기록됐어요</h2>
-      <p>오늘도 찾아주셔서 감사해요. 다음에 또 만나요!</p>
+      <h2 id="dc-title">방문이 기록됐어요</h2>
+      <p id="dc-message">오늘도 찾아주셔서 감사해요. 다음에 또 만나요!</p>
       <div class="next">
         <b>잠시 후</b> 화면을 닫으셔도 돼요. 방문 기록은 매장에 안전하게 저장됐어요.
       </div>
@@ -241,15 +243,19 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  var SUPABASE_URL = 'https://kpehpjjthevmkirjmekn.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwZWhwamp0aGV2bWtpcmptZWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTM4NjMsImV4cCI6MjA5NzI2OTg2M30.xxyDWHkq1FDdoF_X-VhBjmqBAsTmUqRb5GHyGEuvnVw';
-  var state = { storeId:null, storeName:'우리 매장', phone:null, customer:null };
+  var SUPABASE_URL = '';
+  var SUPABASE_ANON_KEY = '';
+  var state = { storeId:null, storeName:'우리 매장', phone:null, customer:null, storeReady:false };
 
   function getStoreId(){
     var q = new URLSearchParams(location.search).get('store_id');
-    if(q) return q;
+    if(q) return q.trim();
     var m = location.pathname.match(/\/s\/([^\/?#]+)/);
-    return m ? decodeURIComponent(m[1]) : null;
+    return m ? decodeURIComponent(m[1]).trim() : null;
+  }
+  function validStoreId(value){
+    return /^[a-z0-9]+$/.test(value || '') ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
   }
 
   async function rpc(name, body){
@@ -271,38 +277,63 @@
     return data;
   }
 
+  async function loadPublicConfig(){
+    var res = await fetch('/api/public-config', {headers:{'Accept':'application/json'}});
+    var data = await res.json();
+    if(!res.ok || !data.supabase_url || !data.supabase_anon_key){
+      throw new Error('서비스 설정을 불러오지 못했습니다.');
+    }
+    SUPABASE_URL = data.supabase_url;
+    SUPABASE_ANON_KEY = data.supabase_anon_key;
+  }
+
   function setStoreName(name){
     state.storeName = name || '우리 매장';
     document.getElementById('store-name').textContent = state.storeName;
     document.getElementById('dr-store').textContent = state.storeName;
   }
 
-  function showExistingCustomer(customer){
-    state.customer = customer;
-    document.getElementById('ci-name').textContent = customer.name;
-    var showVisitInfo = customer.last_visit_days !== null && customer.last_visit_days !== undefined;
-    document.getElementById('ci-last-row').style.display = showVisitInfo ? 'flex' : 'none';
-    document.getElementById('ci-count-row').style.display = showVisitInfo ? 'flex' : 'none';
-    if(showVisitInfo){
-      var days = Number(customer.last_visit_days);
-      document.getElementById('ci-last').textContent = days === 0 ? '오늘' : days + '일 전';
-      document.getElementById('ci-count').textContent = customer.next_visit_count;
-    }
+  function showExistingCustomer(){
+    state.customer = null;
+    document.getElementById('ci-name').textContent = '고객';
+    document.getElementById('ci-last-row').style.display = 'none';
+    document.getElementById('ci-count-row').style.display = 'none';
     show('v-checkin');
   }
 
+  function showCheckinDone(mode){
+    var repeated = mode === 'already_checked_in';
+    document.getElementById('dc-title').textContent = repeated ? '이미 방문이 기록됐어요' : '방문이 기록됐어요';
+    document.getElementById('dc-message').textContent = repeated
+      ? '최근 방문 기록이 있어 추가로 기록하지 않았어요.'
+      : '오늘도 찾아주셔서 감사해요. 다음에 또 만나요!';
+    show('v-done-checkin');
+  }
+
   async function boot(){
+    try{
+      await loadPublicConfig();
+    }catch(e){
+      state.storeReady = false;
+      setStoreName('서비스를 준비하고 있어요');
+      startBtn.disabled = true;
+      toast(e.message);
+      return;
+    }
     state.storeId = getStoreId();
-    if(!state.storeId){
+    if(!state.storeId || !validStoreId(state.storeId)){
       setStoreName('매장을 찾을 수 없어요');
       startBtn.disabled = true;
       toast('QR 링크가 올바르지 않습니다.');
       return;
     }
     try{
-      var data = await rpc('customer_flow_lookup', { p_store_id:state.storeId, p_phone:null });
+      var data = await rpc('qr_customer_lookup', { p_store_id:state.storeId, p_phone:null });
+      state.storeReady = true;
       setStoreName(data.store_name);
+      startBtn.disabled = phoneInp.value.length < 10;
     }catch(e){
+      state.storeReady = false;
       setStoreName('매장을 찾을 수 없어요');
       startBtn.disabled = true;
       toast(e.message || '매장 정보를 불러오지 못했습니다.');
@@ -313,7 +344,8 @@
   function show(id){
     views.forEach(function(v){ document.getElementById(v).classList.toggle('on', v===id); });
     var p = document.querySelector('.phone'); if(p) p.scrollTop = 0;
-    window.scrollTo({top:0});
+    window.scrollTo({top:0, left:0, behavior:'auto'});
+    requestAnimationFrame(function(){ window.scrollTo({top:0, left:0, behavior:'auto'}); });
   }
   function goStart(){ show('v-start'); }
 
@@ -322,7 +354,7 @@
   var startBtn = document.getElementById('startBtn');
   phoneInp.addEventListener('input', function(){
     this.value = this.value.replace(/[^0-9]/g,'');
-    startBtn.disabled = this.value.length < 10;
+    startBtn.disabled = !state.storeReady || this.value.length < 10;
   });
 
   function fmtPhone(p){
@@ -330,18 +362,21 @@
     if(p.length===10) return p.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
     return p;
   }
+  function normalizePhone(value){
+    return String(value || '').replace(/[^0-9]/g, '');
+  }
 
   /* 번호 조회 → 신규/기존 분기 */
   async function lookup(){
-    var raw = phoneInp.value.trim();
+    var raw = normalizePhone(phoneInp.value);
     if(raw.length < 10){ toast('휴대폰 번호를 정확히 입력해 주세요.'); return; }
     startBtn.disabled = true;
     state.phone = raw;
     try{
-      var hit = await rpc('customer_flow_lookup', { p_store_id:state.storeId, p_phone:raw });
+      var hit = await rpc('qr_customer_lookup', { p_store_id:state.storeId, p_phone:raw });
       setStoreName(hit.store_name);
       if(hit.mode === 'existing'){
-        showExistingCustomer(hit.customer);
+        showExistingCustomer();
       } else {
         state.customer = null;
         document.getElementById('reg-phone').textContent = fmtPhone(raw);
@@ -362,14 +397,24 @@
     var btn = document.getElementById('registerBtn');
     btn.disabled = true;
     try{
-      var data = await rpc('customer_flow_register', {
+      var data = await rpc('qr_customer_register', {
         p_store_id:state.storeId,
         p_phone:state.phone,
         p_name:name,
-        p_marketing_agreed:consent
+        p_consent:consent
       });
       if(data.mode === 'existing'){
-        showExistingCustomer(data.customer);
+        showExistingCustomer();
+        return;
+      }
+      if(data.mode === 'checked_in'){
+        showCheckinDone(data.mode);
+        toast('오늘 방문이 기록됐어요.');
+        return;
+      }
+      if(data.mode === 'already_checked_in'){
+        showCheckinDone(data.mode);
+        toast('이미 최근 방문이 기록되어 있어요.');
         return;
       }
       document.getElementById('dr-title').textContent = name + '님, 단골로 등록됐어요';
@@ -387,9 +432,9 @@
     var btn = document.getElementById('checkinBtn');
     btn.disabled = true;
     try{
-      await rpc('customer_flow_checkin', { p_store_id:state.storeId, p_phone:state.phone });
-      show('v-done-checkin');
-      toast('오늘 방문이 기록됐어요.');
+      var data = await rpc('qr_customer_checkin', { p_store_id:state.storeId, p_phone:state.phone });
+      showCheckinDone(data.mode);
+      toast(data.mode === 'already_checked_in' ? '이미 최근 방문이 기록되어 있어요.' : '오늘 방문이 기록됐어요.');
     }catch(e){
       toast(e.message || '방문 기록에 실패했습니다.');
     }finally{
