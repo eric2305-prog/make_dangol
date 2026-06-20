@@ -29,6 +29,26 @@ MVP는 `store_id + phone`으로 고객 중복 생성을 막고, 고객 정보와
 - `is_active`: 사용 여부
 - `created_at`, `updated_at`: 생성/수정 시각
 
+### operator_sessions
+
+운영관리자 서버 세션입니다.
+
+- `operator_email`: 인증된 운영자 식별값
+- `token_hash`: 브라우저 세션 토큰의 SHA-256 해시
+- `expires_at`: 세션 만료 시각
+- `last_seen_at`: 마지막 확인 시각
+- `revoked_at`: 로그아웃 또는 강제 만료 시각
+
+### operator_pin_audit
+
+점주 PIN 발급·재발급 감사 기록입니다. PIN 값은 저장하지 않습니다.
+
+- `operator_email`: 처리 운영자
+- `store_id`, `store_code`: 처리 매장
+- `action`: `issued`, `reissued`
+- `reason`: `initial_issue`, `reissue`
+- `created_at`: 처리 시각
+
 ### customers
 
 고객 기본 정보입니다.

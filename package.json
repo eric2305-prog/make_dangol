@@ -7,6 +7,7 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
