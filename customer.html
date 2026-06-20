@@ -65,18 +65,18 @@
     border-radius:9px;padding:8px 12px;cursor:pointer}
   .readonly-row .redo:active{background:var(--tint)}
 
-  /* 수신 동의 */
-  .consent{display:flex;align-items:center;justify-content:space-between;gap:14px;
-    border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;margin-top:2px}
-  .consent .c-tx b{display:block;font-size:.96rem;font-weight:700}
-  .consent .c-tx span{font-size:.82rem;color:var(--muted)}
-  .switch{position:relative;width:50px;height:29px;flex:none}
-  .switch input{position:absolute;opacity:0;width:0;height:0}
-  .switch .track{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .18s;cursor:pointer}
-  .switch .track::before{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;
-    background:#fff;box-shadow:var(--shadow-sm);transition:transform .18s}
-  .switch input:checked + .track{background:var(--kakao)}
-  .switch input:checked + .track::before{transform:translateX(21px)}
+  /* 동의 */
+  .consent-list{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+  .consent-intro{padding:14px 15px;background:var(--tint);font-size:.86rem;color:var(--ink-soft);line-height:1.5}
+  .consent-row{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;cursor:pointer}
+  .consent-row + .consent-row{border-top:1px solid var(--line-soft)}
+  .consent-row input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:#191919;cursor:pointer}
+  .consent-copy{min-width:0}
+  .consent-copy b{display:flex;align-items:center;gap:7px;font-size:.91rem;line-height:1.35}
+  .consent-copy span{display:block;margin-top:4px;font-size:.8rem;color:var(--muted);line-height:1.45}
+  .consent-badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:5px;font-size:.7rem;font-weight:700;font-style:normal;white-space:nowrap}
+  .consent-badge.required{background:var(--y-tint);color:#745D00}
+  .consent-badge.optional{background:var(--tint);color:var(--muted)}
 
   .privacy{font-size:.82rem;color:var(--muted);line-height:1.55;margin-top:16px;
     background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
@@ -176,15 +176,32 @@
     </div>
 
     <div class="field" style="margin-bottom:0">
-      <div class="consent">
-        <span class="c-tx">
-          <b>재방문 안내 받기</b>
-          <span>카카오톡으로 방문하기 좋은 시점을 안내해 드려요.</span>
-        </span>
-        <label class="switch"><input type="checkbox" id="reg-consent" checked><span class="track"></span></label>
+      <div class="consent-list" aria-label="단골 등록 동의">
+        <div class="consent-intro"><b id="consent-store-name">우리 매장</b>의 단골 안내를 받기 위해 이름과 휴대폰 번호를 등록합니다.</div>
+        <label class="consent-row">
+          <input type="checkbox" id="privacy-agreed" required aria-required="true">
+          <span class="consent-copy">
+            <b>개인정보 수집 및 이용 동의 <em class="consent-badge required">필수</em></b>
+            <span>단골 등록과 방문 기록을 위해 이름과 휴대폰 번호를 매장에서 저장해요.</span>
+          </span>
+        </label>
+        <label class="consent-row">
+          <input type="checkbox" id="kakao-agreed">
+          <span class="consent-copy">
+            <b>카카오톡 메시지 수신 동의 <em class="consent-badge optional">선택</em></b>
+            <span>등록한 매장에서 방문 주기에 맞춘 카카오톡 안내를 받을 수 있어요.</span>
+          </span>
+        </label>
+        <label class="consent-row">
+          <input type="checkbox" id="marketing-agreed">
+          <span class="consent-copy">
+            <b>마케팅 정보 수신 동의 <em class="consent-badge optional">선택</em></b>
+            <span>등록한 매장의 재방문 안내와 매장 소식을 받을 수 있어요.</span>
+          </span>
+        </label>
       </div>
     </div>
-    <div class="privacy" style="margin-top:12px">안내를 안 받아도 단골 등록은 그대로 돼요. 나중에 매장에 말씀하시면 언제든 바꿀 수 있어요.</div>
+    <div class="privacy" style="margin-top:12px">선택 동의는 단골 등록에 영향을 주지 않아요. 수신을 원하지 않으면 언제든지 매장에 요청해 해지할 수 있어요.</div>
 
     <div class="foot">
       <button class="btn btn-primary" id="registerBtn" onclick="doRegister()">단골 등록하기</button>
@@ -291,6 +308,7 @@
     state.storeName = name || '우리 매장';
     document.getElementById('store-name').textContent = state.storeName;
     document.getElementById('dr-store').textContent = state.storeName;
+    document.getElementById('consent-store-name').textContent = state.storeName;
   }
 
   function showExistingCustomer(){
@@ -393,7 +411,10 @@
   async function doRegister(){
     var name = document.getElementById('name').value.trim();
     if(!name){ toast('이름을 입력해 주세요.'); return; }
-    var consent = document.getElementById('reg-consent').checked;
+    var privacyAgreed = document.getElementById('privacy-agreed').checked;
+    var kakaoAgreed = document.getElementById('kakao-agreed').checked;
+    var marketingAgreed = document.getElementById('marketing-agreed').checked;
+    if(!privacyAgreed){ toast('개인정보 수집 및 이용에 동의해 주세요.'); return; }
     var btn = document.getElementById('registerBtn');
     btn.disabled = true;
     try{
@@ -401,7 +422,9 @@
         p_store_id:state.storeId,
         p_phone:state.phone,
         p_name:name,
-        p_consent:consent
+        p_privacy_agreed:privacyAgreed,
+        p_kakao_agreed:kakaoAgreed,
+        p_marketing_agreed:marketingAgreed
       });
       if(data.mode === 'existing'){
         showExistingCustomer();
@@ -419,7 +442,7 @@
       }
       document.getElementById('dr-title').textContent = name + '님, 단골로 등록됐어요';
       show('v-done-register');
-      toast(consent ? '단골 등록 완료 · 재방문 안내를 받아요.' : '단골 등록 완료');
+      toast(kakaoAgreed && marketingAgreed ? '단골 등록 완료 · 매장 안내를 받아요.' : '단골 등록 완료');
     }catch(e){
       toast(e.message || '단골 등록에 실패했습니다.');
     }finally{

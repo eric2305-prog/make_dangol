@@ -55,6 +55,7 @@ test.describe('owner QR management', () => {
     await page.locator('#startBtn').click();
     await expect(page.locator('#v-register')).toHaveClass(/on/);
     await page.locator('#name').fill('QR관리테스트');
+    await page.locator('#privacy-agreed').check();
     await page.locator('#registerBtn').click();
     await expect(page.locator('#v-done-register')).toHaveClass(/on/);
 

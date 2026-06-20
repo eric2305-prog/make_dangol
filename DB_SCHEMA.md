@@ -38,7 +38,9 @@ MVP는 `store_id + phone`으로 고객 중복 생성을 막고, 고객 정보와
 - `name`: 고객 이름
 - `phone`: 고객 휴대폰 번호
 - `privacy_agreed`: 개인정보 수집 동의
+- `kakao_agreed`: 카카오톡 메시지 수신 동의
 - `marketing_agreed`: 마케팅 수신 동의
+- `consent`: 카카오톡·마케팅 동의가 모두 있는 발송 가능 상태
 - `visit_count`: 방문 횟수
 - `last_visit_at`: 마지막 방문 시각
 - `status`: `new`, `active`, `dormant`

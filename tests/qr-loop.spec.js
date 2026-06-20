@@ -95,6 +95,11 @@ test.describe.serial('Secure QR registration and revisit loop', () => {
     await expect(page.locator('#v-register')).toHaveClass(/on/);
     await page.locator('#name').fill(customerName);
     await page.locator('#registerBtn').click();
+    await expect(page.locator('#toast')).toContainText('개인정보 수집 및 이용에 동의해 주세요.');
+    await page.locator('#privacy-agreed').check();
+    await page.locator('#kakao-agreed').check();
+    await page.locator('#marketing-agreed').check();
+    await page.locator('#registerBtn').click();
     await expect(page.locator('#v-done-register')).toHaveClass(/on/);
 
     const lookup = await rpc('qr_customer_lookup', { p_store_id: STORE_ID, p_phone: phone });
@@ -143,7 +148,9 @@ test.describe.serial('Secure QR registration and revisit loop', () => {
       p_store_id: STORE_ID,
       p_phone: directPhone,
       p_name: directCustomerName,
-      p_consent: true
+      p_privacy_agreed: true,
+      p_kakao_agreed: true,
+      p_marketing_agreed: true
     });
     expect(first.mode).toBe('registered');
     expectPublicResponse(first, ['mode', 'store_name']);
@@ -152,7 +159,9 @@ test.describe.serial('Secure QR registration and revisit loop', () => {
       p_store_id: STORE_ID,
       p_phone: dashed,
       p_name: `${directCustomerName}2`,
-      p_consent: true
+      p_privacy_agreed: true,
+      p_kakao_agreed: true,
+      p_marketing_agreed: true
     });
     expect(second.mode).toBe('already_checked_in');
     expectPublicResponse(second, ['mode', 'store_name']);
@@ -161,7 +170,9 @@ test.describe.serial('Secure QR registration and revisit loop', () => {
       p_store_id: STORE_ID,
       p_phone: spaced,
       p_name: `${directCustomerName}3`,
-      p_consent: true
+      p_privacy_agreed: true,
+      p_kakao_agreed: true,
+      p_marketing_agreed: true
     });
     expect(third.mode).toBe('already_checked_in');
     expectPublicResponse(third, ['mode', 'store_name']);
