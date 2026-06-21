@@ -46,14 +46,16 @@ test('고객 동의 상태를 구분해 저장하고 QR 흐름을 유지한다',
   await page.locator('#kakao-agreed').check();
   await page.locator('#marketing-agreed').check();
 
-  const registerRequest = page.waitForRequest((req) => req.url().endsWith('/rpc/qr_customer_register'));
+  const registerResponse = page.waitForResponse((res) => res.url().endsWith('/rpc/qr_customer_register'));
   await page.locator('#registerBtn').click();
-  const payload = (await registerRequest).postDataJSON();
+  const response = await registerResponse;
+  expect(response.ok()).toBeTruthy();
+  const payload = response.request().postDataJSON();
   expect(payload.p_privacy_agreed).toBe(true);
   expect(payload.p_kakao_agreed).toBe(true);
   expect(payload.p_marketing_agreed).toBe(true);
   expect(payload.p_consent).toBeUndefined();
-  await expect(page.locator('#v-done-register')).toHaveClass(/on/);
+  await expect(page.locator('#v-done-register.on')).toBeVisible();
 
   const lookup = await request.post(`${rpcUrl}/qr_customer_lookup`, {
     headers,
@@ -69,5 +71,5 @@ test('고객 동의 상태를 구분해 저장하고 QR 흐름을 유지한다',
   await page.locator('#startBtn').click();
   await expect(page.locator('#v-checkin')).toHaveClass(/on/);
   await page.locator('#checkinBtn').click();
-  await expect(page.locator('#v-done-checkin')).toHaveClass(/on/);
+  await expect(page.locator('#v-done-checkin.on')).toBeVisible();
 });
