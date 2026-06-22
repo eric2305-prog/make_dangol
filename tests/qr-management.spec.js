@@ -6,6 +6,8 @@ const OTHER_STORE_ID = process.env.E2E_OTHER_STORE_ID || 'test02';
 const OWNER_PIN = process.env.E2E_OWNER_PIN;
 const REGISTRATION_URL = `${BASE_URL}/register?store_id=${STORE_ID}`;
 
+test.use({ trace: 'off', screenshot: 'off', video: 'off' });
+
 async function login(page) {
   await page.goto(`/owner?store_id=${OTHER_STORE_ID}`);
   await page.locator('#lg-store').fill(STORE_ID);
@@ -57,14 +59,14 @@ test.describe('owner QR management', () => {
     await page.locator('#name').fill('QR관리테스트');
     await page.locator('#privacy-agreed').check();
     await page.locator('#registerBtn').click();
-    await expect(page.locator('#v-done-register')).toHaveClass(/on/);
+    await expect(page.locator('#v-done-register.on')).toBeVisible();
 
     await page.goto(REGISTRATION_URL);
     await page.locator('#phone').fill(phone);
     await page.locator('#startBtn').click();
     await expect(page.locator('#v-checkin')).toHaveClass(/on/);
     await page.locator('#checkinBtn').click();
-    await expect(page.locator('#v-done-checkin')).toHaveClass(/on/);
+    await expect(page.locator('#v-done-checkin.on')).toBeVisible();
 
     await page.request.post('/api/owner/logout');
   });

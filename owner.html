@@ -279,6 +279,7 @@
   .panel-head h2{font-size:1.12rem;font-weight:800}
   .panel-head .sub{font-size:.86rem;color:var(--muted);margin-top:2px;font-weight:500}
   .panel-head .count{font-size:.82rem;font-weight:800;color:#D9920A;background:#FFF6D6;padding:4px 11px;border-radius:999px}
+  .dashboard-empty{text-align:center!important;color:var(--muted);padding:34px 20px!important;line-height:1.6}
 
   /* table */
   .tbl{width:100%;border-collapse:collapse}
@@ -548,86 +549,38 @@
 
     <!-- KPI -->
     <div class="kpis">
-      <div class="kpi accent"><div class="kl">오늘 보낼 메시지</div><div class="kn"><span id="owner-message-count">9</span><span class="u">건</span></div></div>
-      <div class="kpi"><div class="kl">재방문 지난 고객</div><div class="kn"><span id="owner-overdue-count">4</span><span class="u">명</span></div></div>
-      <div class="kpi"><div class="kl">이번 주 관리 추천</div><div class="kn"><span id="owner-recommend-count">28</span><span class="u">명</span></div></div>
-      <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn"><span id="owner-new-count">14</span><span class="u">명</span></div></div>
+      <div class="kpi accent"><div class="kl">총 고객 수</div><div class="kn"><span id="owner-total-count">0</span><span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">재방문 관리 대상</div><div class="kn"><span id="owner-recommend-count">0</span><span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">이번 달 신규 등록</div><div class="kn"><span id="owner-new-count">0</span><span class="u">명</span></div></div>
+      <div class="kpi"><div class="kl">오늘 보낼 메시지</div><div class="kn"><span id="owner-message-count">0</span><span class="u">건</span></div></div>
+    </div>
+
+    <!-- 최근 등록 고객 -->
+    <div class="panel" id="recentCustomersPanel">
+      <div class="panel-head">
+        <div><h2>최근 등록 고객</h2><div class="sub">가장 최근에 단골 등록한 고객입니다.</div></div>
+        <span class="count" id="recentCustomersCount">0명</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>고객명</th><th>등록일</th><th>방문 횟수</th></tr></thead>
+        <tbody id="recentCustomerRows">
+          <tr><td colspan="3" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- 재방문 관리 -->
     <div class="panel" id="visitPanel">
       <div class="panel-head">
         <div><h2>재방문 관리</h2><div class="sub"><b style="color:var(--ink)">연락 추천 고객</b> · 다시 연락하면 좋은 고객을 모아봤어요.</div></div>
-        <span class="count" id="visitPanelCount">28명</span>
+        <span class="count" id="visitPanelCount">0명</span>
       </div>
       <table class="tbl">
         <thead>
           <tr><th>고객명</th><th>마지막 방문</th><th>예상 재방문 시점</th><th>상태</th><th>액션</th></tr>
         </thead>
         <tbody id="visitRows">
-          <tr data-customer-id="c001">
-            <td class="cell-cust"><div class="cust"><span class="av">김</span><span class="nm">김서연</span></div></td>
-            <td data-l="마지막 방문">38일 전</td>
-            <td data-l="예상 재방문 시점">이번 주</td>
-            <td data-l="상태"><span class="pill due">지금 안내</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c002">
-            <td class="cell-cust"><div class="cust"><span class="av">이</span><span class="nm">이준호</span></div></td>
-            <td data-l="마지막 방문">24일 전</td>
-            <td data-l="예상 재방문 시점">3일 뒤</td>
-            <td data-l="상태"><span class="pill soon">미리 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c003">
-            <td class="cell-cust"><div class="cust"><span class="av">박</span><span class="nm">박지민</span></div></td>
-            <td data-l="마지막 방문">31일 전</td>
-            <td data-l="예상 재방문 시점">오늘</td>
-            <td data-l="상태"><span class="pill due">지금 안내</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c004">
-            <td class="cell-cust"><div class="cust"><span class="av">최</span><span class="nm">최은우</span></div></td>
-            <td data-l="마지막 방문">19일 전</td>
-            <td data-l="예상 재방문 시점">5일 뒤</td>
-            <td data-l="상태"><span class="pill ok">여유 있음</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c005">
-            <td class="cell-cust"><div class="cust"><span class="av">정</span><span class="nm">정하늘</span></div></td>
-            <td data-l="마지막 방문">42일 전</td>
-            <td data-l="예상 재방문 시점">지남</td>
-            <td data-l="상태"><span class="pill due">지금 안내</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c006">
-            <td class="cell-cust"><div class="cust"><span class="av">윤</span><span class="nm">윤서진</span></div></td>
-            <td data-l="마지막 방문">27일 전</td>
-            <td data-l="예상 재방문 시점">2일 뒤</td>
-            <td data-l="상태"><span class="pill soon">미리 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c007">
-            <td class="cell-cust"><div class="cust"><span class="av">강</span><span class="nm">강민재</span></div></td>
-            <td data-l="마지막 방문">35일 전</td>
-            <td data-l="예상 재방문 시점">오늘</td>
-            <td data-l="상태"><span class="pill due">지금 안내</span></td>
-            <td data-l="액션"><button class="btn-mini solid" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c008">
-            <td class="cell-cust"><div class="cust"><span class="av">한</span><span class="nm">한지우</span></div></td>
-            <td data-l="마지막 방문">22일 전</td>
-            <td data-l="예상 재방문 시점">4일 뒤</td>
-            <td data-l="상태"><span class="pill soon">미리 안내</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
-          <tr data-customer-id="c009">
-            <td class="cell-cust"><div class="cust"><span class="av">오</span><span class="nm">오세라</span></div></td>
-            <td data-l="마지막 방문">16일 전</td>
-            <td data-l="예상 재방문 시점">6일 뒤</td>
-            <td data-l="상태"><span class="pill ok">여유 있음</span></td>
-            <td data-l="액션"><button class="btn-mini" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>
-          </tr>
+          <tr><td colspan="5" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1212,11 +1165,11 @@
     if(kind === 'soon') return 'soon';
     return 'ok';
   }
-  function renderOwnerCustomers(rows){
+  function renderOwnerCustomers(rows, totalCount){
     var body = document.getElementById('visitRows');
     if(!body) return;
     if(!rows || !rows.length){
-      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">등록된 고객이 없습니다.</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="dashboard-empty">아직 재방문 관리 대상 고객이 없어요.</td></tr>';
       setText('visitPanelCount', '0명');
       return;
     }
@@ -1239,7 +1192,37 @@
         '<td data-l="액션"><button class="btn-mini'+solid+'" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>' +
       '</tr>';
     }).join('');
-    setText('visitPanelCount', rows.length + '명');
+    setText('visitPanelCount', Number(totalCount || rows.length) + '명');
+  }
+  function customerDateLabel(value){
+    if(!value) return '-';
+    var date = new Date(value);
+    if(Number.isNaN(date.getTime())) return '-';
+    return new Intl.DateTimeFormat('ko-KR', {
+      timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit'
+    }).format(date);
+  }
+  function renderRecentCustomers(rows){
+    var body = document.getElementById('recentCustomerRows');
+    if(!body) return;
+    if(!rows || !rows.length){
+      body.innerHTML = '<tr><td colspan="3" class="dashboard-empty">아직 등록된 고객이 없어요.<br>매장 QR로 첫 고객을 등록해 보세요.</td></tr>';
+      setText('recentCustomersCount', '0명');
+      return;
+    }
+    body.innerHTML = rows.map(function(c){
+      var name = c.name || '고객';
+      var initial = name.charAt(0) || '고';
+      var phone = c.phone_masked || '';
+      return '<tr data-customer-id="'+escapeHtml(c.id || '')+'">' +
+        '<td class="cell-cust"><div class="cust"><span class="av">'+escapeHtml(initial)+'</span><span><span class="nm">'+escapeHtml(name)+'</span>' +
+        (phone ? '<span style="display:block;font-size:.78rem;color:var(--muted);margin-top:3px">'+escapeHtml(phone)+'</span>' : '') +
+        '</span></div></td>' +
+        '<td data-l="등록일">'+escapeHtml(customerDateLabel(c.created_at))+'</td>' +
+        '<td data-l="방문 횟수">'+Number(c.visit_count || 0)+'회</td>' +
+      '</tr>';
+    }).join('');
+    setText('recentCustomersCount', rows.length + '명');
   }
   var ownerRegistrationUrl = '';
   var ownerQrStoreId = '';
@@ -1319,6 +1302,10 @@
       var store = data && data.store ? data.store : {};
       var metrics = data && data.metrics ? data.metrics : {};
       var rows = data && data.customers ? data.customers : [];
+      var recommendedRows = rows.filter(function(customer){
+        return customer.status_kind === 'due' || customer.status_kind === 'soon';
+      });
+      var recentRows = response.recent_customers || [];
       if(store.name){
         var title = document.querySelector('.top h1');
         var sideStore = document.querySelector('.side-store');
@@ -1326,10 +1313,11 @@
         if(sideStore) sideStore.textContent = store.name;
       }
       setText('owner-message-count', metrics.pending_messages || 0);
-      setText('owner-overdue-count', metrics.overdue_customers || 0);
+      setText('owner-total-count', metrics.total_customers || 0);
       setText('owner-recommend-count', metrics.recommended_customers || 0);
       setText('owner-new-count', metrics.new_customers_this_month || 0);
-      renderOwnerCustomers(rows);
+      renderOwnerCustomers(recommendedRows, metrics.recommended_customers || 0);
+      renderRecentCustomers(recentRows);
       renderQrManagement(store, response.registration_url);
       return true;
     }catch(e){

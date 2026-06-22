@@ -4,8 +4,16 @@ const {
   parseCookies,
   sendJson,
   serviceRpc,
+  serviceSelect,
   sha256
 } = require('../../server/owner-security');
+
+function maskPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 11) return `${digits.slice(0, 3)}-****-${digits.slice(7)}`;
+  if (digits.length === 10) return `${digits.slice(0, 3)}-***-${digits.slice(6)}`;
+  return '****';
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -31,13 +39,43 @@ module.exports = async function handler(req, res) {
 
     const store = result.snapshot.store || {};
     const storeId = store.store_id || store.store_code;
+    const storeUuid = store.id;
     if (!storeId || !/^[a-z0-9]+$/.test(storeId)) {
       return sendJson(res, 500, { ok: false, message: '매장 정보를 확인할 수 없습니다.' });
     }
 
+    if (!storeUuid || !/^[0-9a-f-]{36}$/i.test(storeUuid)) {
+      return sendJson(res, 500, { ok: false, message: '매장 정보를 확인할 수 없습니다.' });
+    }
+
+    const recentRows = await serviceSelect(
+      'customers',
+      `select=id,name,phone,created_at,last_visit_at&store_id=eq.${encodeURIComponent(storeUuid)}&order=created_at.desc&limit=5`
+    );
+    const customerIds = recentRows.map((customer) => customer.id).filter(Boolean);
+    const visitRows = customerIds.length
+      ? await serviceSelect(
+          'visits',
+          `select=customer_id&store_id=eq.${encodeURIComponent(storeUuid)}&customer_id=in.(${customerIds.map(encodeURIComponent).join(',')})`
+        )
+      : [];
+    const visitCounts = visitRows.reduce((counts, visit) => {
+      counts[visit.customer_id] = (counts[visit.customer_id] || 0) + 1;
+      return counts;
+    }, {});
+    const recentCustomers = recentRows.map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      phone_masked: maskPhone(customer.phone),
+      created_at: customer.created_at,
+      last_visit_at: customer.last_visit_at,
+      visit_count: visitCounts[customer.id] || 0
+    }));
+
     return sendJson(res, 200, {
       ok: true,
       snapshot: result.snapshot,
+      recent_customers: recentCustomers,
       expires_at: result.expires_at,
       registration_url: `https://www.revaro.me/register?store_id=${encodeURIComponent(storeId)}`
     });

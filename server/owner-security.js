@@ -103,6 +103,24 @@ async function serviceRpc(name, body) {
   return data;
 }
 
+async function serviceSelect(resource, query) {
+  const url = supabaseUrl();
+  const serviceRoleKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const response = await fetch(`${url}/rest/v1/${resource}?${query}`, {
+    method: 'GET',
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Accept: 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Supabase select failed: ${resource} (${response.status})`);
+  }
+  return response.json();
+}
+
 module.exports = {
   COOKIE_NAME,
   SESSION_SECONDS,
@@ -115,6 +133,7 @@ module.exports = {
   secureHash,
   sendJson,
   serviceRpc,
+  serviceSelect,
   sessionCookie,
   sha256,
   supabaseAnonKey,
