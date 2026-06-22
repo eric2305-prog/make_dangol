@@ -15,11 +15,6 @@ function maskPhone(phone) {
   return '****';
 }
 
-function phoneLast4(phone) {
-  const digits = String(phone || '').replace(/\D/g, '');
-  return digits.length >= 4 ? digits.slice(-4) : '****';
-}
-
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -55,7 +50,7 @@ module.exports = async function handler(req, res) {
 
     const customerRows = await serviceSelect(
       'customers',
-      `select=id,name,phone,created_at,last_visit_at,visit_count&store_id=eq.${encodeURIComponent(storeUuid)}&order=created_at.desc`
+      `select=id,name,phone,created_at,last_visit_at,visit_count,kakao_agreed,marketing_agreed&store_id=eq.${encodeURIComponent(storeUuid)}&order=created_at.desc`
     );
     const recentRows = customerRows.slice(0, 5);
     const customerIds = recentRows.map((customer) => customer.id).filter(Boolean);
@@ -80,9 +75,11 @@ module.exports = async function handler(req, res) {
     const customerList = customerRows.map((customer) => ({
       id: customer.id,
       name: customer.name,
-      phone_last4: phoneLast4(customer.phone),
+      phone_masked: maskPhone(customer.phone),
       last_visit_at: customer.last_visit_at,
-      visit_count: Number(customer.visit_count || 0)
+      visit_count: Number(customer.visit_count || 0),
+      kakao_agreed: customer.kakao_agreed === true,
+      marketing_agreed: customer.marketing_agreed === true
     }));
 
     return sendJson(res, 200, {

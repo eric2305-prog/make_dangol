@@ -95,12 +95,13 @@ test.describe('owner dashboard real data', () => {
     })]);
     expect(body.customer_list).toEqual([expect.objectContaining({
       name: '최근고객',
-      phone_last4: '5678',
+      phone_masked: '010-****-5678',
       last_visit_at: '2026-06-23T01:00:00Z',
-      visit_count: 2
+      visit_count: 2,
+      kakao_agreed: false,
+      marketing_agreed: false
     })]);
     expect(body.customer_list[0]).not.toHaveProperty('phone');
-    expect(body.customer_list[0]).not.toHaveProperty('phone_masked');
     expect(res.body).not.toContain('01012345678');
     expect(requestedUrls.find((url) => url.includes('/customers?'))).toContain(`store_id=eq.${storeUuid}`);
     expect(requestedUrls.find((url) => url.includes('/customers?'))).toContain('order=created_at.desc');
@@ -168,9 +169,11 @@ test.describe('owner dashboard real data', () => {
       renderCustomerList([{
         id: 'customer-1',
         name: '최근고객',
-        phone_last4: '5678',
+        phone_masked: '010-****-5678',
         last_visit_at: '2026-06-23T01:00:00Z',
-        visit_count: 2
+        visit_count: 2,
+        kakao_agreed: true,
+        marketing_agreed: false
       }]);
       renderOwnerCustomers([{
         id: 'customer-1',
@@ -195,6 +198,28 @@ test.describe('owner dashboard real data', () => {
     await expect(page.locator('#visitRows')).toContainText('지금 안내');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
 
+    await page.evaluate(() => {
+      activeCustomerId = '10000000-0000-4000-8000-000000000001';
+      renderCustomerDetail({
+        id: activeCustomerId,
+        name: '최근고객',
+        phone: '01012345678',
+        last_visit_at: '2026-06-23T01:00:00Z',
+        visit_count: 2,
+        kakao_agreed: true,
+        marketing_agreed: false,
+        created_at: '2026-06-01T01:00:00Z'
+      });
+      document.querySelector('#editOverlay').classList.add('open');
+    });
+    await expect(page.locator('#detailCustomerPhone')).toHaveText('010-1234-5678');
+    await expect(page.locator('#detailKakaoConsent')).toHaveText('동의');
+    await expect(page.locator('#detailMarketingConsent')).toHaveText('미동의');
+    await page.getByRole('button', { name: '고객 정보 수정', exact: true }).click();
+    expect(await page.locator('#ed-name').inputValue()).toBe('최근고객');
+    expect(await page.locator('#ed-phone').inputValue()).toBe('01012345678');
+    await page.evaluate(() => cancelCustomerEdit());
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => toggleSide(false));
     await expect(page.locator('#side')).not.toHaveClass(/open/);
@@ -203,6 +228,10 @@ test.describe('owner dashboard real data', () => {
       return box.x + box.width;
     }).toBeLessThanOrEqual(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+    const modalBox = await page.locator('#editOverlay .modal').boundingBox();
+    expect(Math.abs((modalBox.y + modalBox.height) - 844)).toBeLessThanOrEqual(1);
+    await page.screenshot({ path: 'test-results/owner-customer-detail-mobile.png', fullPage: false });
+    await page.evaluate(() => closeEdit());
     await page.screenshot({ path: 'test-results/owner-dashboard-mobile.png', fullPage: true });
   });
 });

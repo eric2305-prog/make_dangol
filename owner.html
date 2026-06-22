@@ -404,7 +404,20 @@
   .switch input:checked + .track{background:var(--kakao)}
   .switch input:checked + .track::before{transform:translateX(20px)}
   .modal-foot{padding:8px 22px 22px}
-  .modal-foot .btn{width:100%}
+  .modal-foot{display:flex;gap:10px}
+  .modal-foot .btn{flex:1;padding:14px 18px;font-size:.96rem}
+  .customer-row{cursor:pointer;transition:background .15s}
+  .customer-row:hover,.customer-row:focus-visible{background:var(--y-tint)}
+  .customer-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+  .customer-detail-item{min-width:0}
+  .customer-detail-item.full{grid-column:1/-1}
+  .customer-detail-item .k{display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:3px}
+  .customer-detail-item .v{display:block;font-size:.96rem;color:var(--ink);font-weight:700;overflow-wrap:anywhere}
+  .consent-state{display:inline-flex;align-items:center;gap:6px;font-size:.86rem;font-weight:700;padding:6px 10px;border-radius:8px}
+  .consent-state.on{background:var(--green-tint);color:var(--green)}
+  .consent-state.off{background:#F2F2F2;color:var(--muted)}
+  .customer-edit-error{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:#FDECEC;color:#C0453B;font-size:.84rem;font-weight:700}
+  .customer-edit-error.show{display:block}
 
 
   /* mobile */
@@ -439,6 +452,11 @@
     .sent-result-cell{align-items:flex-start!important}
     .qr-panel{justify-content:center}
     .topbar .tt h1{font-size:1.3rem}
+    .modal-overlay{align-items:flex-end;padding:0}
+    .modal{max-width:none;width:100%;max-height:92dvh;border-radius:18px 18px 0 0;animation:sheetup .2s ease}
+    @keyframes sheetup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+    .customer-detail-grid{grid-template-columns:1fr}
+    .customer-detail-item.full{grid-column:auto}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   :focus-visible{outline:3px solid rgba(25,25,25,.55);outline-offset:2px;border-radius:8px}
@@ -577,9 +595,9 @@
         <span class="count" id="customerListCount">0명</span>
       </div>
       <table class="tbl">
-        <thead><tr><th>고객명</th><th>휴대폰 뒷자리</th><th>최근 방문일</th><th>방문 횟수</th></tr></thead>
+        <thead><tr><th>고객명</th><th>휴대폰 번호</th><th>방문 횟수</th><th>최근 방문일</th><th>동의 상태</th></tr></thead>
         <tbody id="customerListRows">
-          <tr><td colspan="4" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
+          <tr><td colspan="5" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -756,40 +774,50 @@
   </main>
 </div>
 
-<!-- 고객정보 수정 모달 -->
+<!-- 고객 상세·수정 모달 -->
 <div class="modal-overlay" id="editOverlay" onclick="overlayClose(event)">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
     <div class="modal-head">
-      <h3 id="editTitle">고객정보 수정</h3>
+      <h3 id="editTitle">고객 상세</h3>
       <button class="modal-x" onclick="closeEdit()" aria-label="닫기">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="field">
-        <label>고객 이름</label>
-        <input class="input" id="ed-name" type="text" placeholder="고객 이름">
-      </div>
-      <div class="field">
-        <label>휴대폰 번호</label>
-        <input class="input" id="ed-phone" inputmode="numeric" placeholder="01012345678">
-        <div class="phone-note"><span class="pn-i">⚠️</span><span>휴대폰 번호는 고객 식별 기준입니다. 실제 고객 번호가 맞는지 확인 후 저장해 주세요.</span></div>
-      </div>
-      <div class="field">
-        <label>마지막 방문일</label>
-        <input class="input" id="ed-visit" type="date">
-      </div>
-      <div class="field">
-        <label>고객 메모 <span class="hint">선택</span></label>
-        <textarea class="input" id="ed-memo" placeholder="예) 펌 주기 2개월, 밝은 컬러 선호"></textarea>
-      </div>
-      <div class="field" style="margin-bottom:0">
-        <div class="consent">
-          <span class="c-tx"><b>마케팅 수신 동의</b><span>재방문 안내 메시지 발송에 사용됩니다.</span></span>
-          <label class="switch"><input type="checkbox" id="ed-consent"><span class="track"></span></label>
+    <div id="customerDetailView">
+      <div class="modal-body">
+        <div class="customer-detail-grid">
+          <div class="customer-detail-item full"><span class="k">고객 이름</span><span class="v" id="detailCustomerName">-</span></div>
+          <div class="customer-detail-item full"><span class="k">휴대폰 번호</span><span class="v" id="detailCustomerPhone">-</span></div>
+          <div class="customer-detail-item"><span class="k">최근 방문일</span><span class="v" id="detailLastVisit">-</span></div>
+          <div class="customer-detail-item"><span class="k">총 방문 횟수</span><span class="v" id="detailVisitCount">-</span></div>
+          <div class="customer-detail-item"><span class="k">카카오톡 수신 동의</span><span class="consent-state off" id="detailKakaoConsent">미동의</span></div>
+          <div class="customer-detail-item"><span class="k">마케팅 수신 동의</span><span class="consent-state off" id="detailMarketingConsent">미동의</span></div>
+          <div class="customer-detail-item full"><span class="k">고객 등록일</span><span class="v" id="detailCreatedAt">-</span></div>
         </div>
       </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeEdit()">닫기</button>
+        <button class="btn btn-primary" onclick="showCustomerEdit()">고객 정보 수정</button>
+      </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary btn-lg" onclick="saveEdit()">수정 내용 저장</button>
+    <div id="customerEditView" hidden>
+      <div class="modal-body">
+        <div class="field"><label>고객 이름</label><input class="input" id="ed-name" type="text" maxlength="50" placeholder="고객 이름"></div>
+        <div class="field">
+          <label>휴대폰 번호</label>
+          <input class="input" id="ed-phone" inputmode="numeric" maxlength="13" placeholder="01012345678">
+          <div class="phone-note"><span class="pn-i">!</span><span>같은 매장에 이미 등록된 번호로는 변경할 수 없습니다.</span></div>
+        </div>
+        <div class="field">
+          <div class="consent"><span class="c-tx"><b>카카오톡 수신 동의</b><span>매장의 방문 안내 메시지 수신 여부입니다.</span></span><label class="switch"><input type="checkbox" id="ed-kakao"><span class="track"></span></label></div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <div class="consent"><span class="c-tx"><b>마케팅 수신 동의</b><span>매장의 마케팅 정보 수신 여부입니다.</span></span><label class="switch"><input type="checkbox" id="ed-marketing"><span class="track"></span></label></div>
+        </div>
+        <div class="customer-edit-error" id="customerEditError"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="cancelCustomerEdit()">취소</button>
+        <button class="btn btn-primary" id="saveCustomerButton" onclick="saveEdit()">수정 내용 저장</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1243,7 +1271,7 @@
     var body = document.getElementById('customerListRows');
     if(!body) return;
     if(!rows || !rows.length){
-      body.innerHTML = '<tr><td colspan="4" class="dashboard-empty">아직 등록된 고객이 없어요.<br>매장 QR로 첫 고객을 등록해 보세요.</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="dashboard-empty">아직 등록된 고객이 없어요.<br>매장 QR로 첫 고객을 등록해 보세요.</td></tr>';
       setText('customerListCount', '0명');
       return;
     }
@@ -1251,11 +1279,14 @@
       var name = c.name || '고객';
       var initial = name.charAt(0) || '고';
       var lastVisit = c.last_visit_at ? customerDateLabel(c.last_visit_at) : '방문 기록 없음';
-      return '<tr data-customer-id="'+escapeHtml(c.id || '')+'">' +
+      var customerId = escapeHtml(c.id || '');
+      var consentLabel = (c.kakao_agreed ? '카카오 동의' : '카카오 미동의') + ' · ' + (c.marketing_agreed ? '마케팅 동의' : '마케팅 미동의');
+      return '<tr class="customer-row" tabindex="0" role="button" data-customer-id="'+customerId+'" onclick="openCustomerDetail(\''+customerId+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openCustomerDetail(\''+customerId+'\')}">' +
         '<td class="cell-cust"><div class="cust"><span class="av">'+escapeHtml(initial)+'</span><span class="nm">'+escapeHtml(name)+'</span></div></td>' +
-        '<td data-l="휴대폰 뒷자리">'+escapeHtml(c.phone_last4 || '****')+'</td>' +
-        '<td data-l="최근 방문일">'+escapeHtml(lastVisit)+'</td>' +
+        '<td data-l="휴대폰 번호">'+escapeHtml(c.phone_masked || '****')+'</td>' +
         '<td data-l="방문 횟수">'+Number(c.visit_count || 0)+'회</td>' +
+        '<td data-l="최근 방문일">'+escapeHtml(lastVisit)+'</td>' +
+        '<td data-l="동의 상태">'+escapeHtml(consentLabel)+'</td>' +
       '</tr>';
     }).join('');
     setText('customerListCount', rows.length + '명');
@@ -1391,35 +1422,113 @@
     toast('매장 설정이 저장되었습니다.');
   }
 
-  /* ---------- 고객정보 수정 모달 ---------- */
-  function openEdit(btn){
-    var row = btn.closest('tr');
-    var nameEl = row ? row.querySelector('.nm') : null;
-    var visitEl = row ? row.querySelector('[data-l="마지막 방문"]') : null;
-    document.getElementById('ed-name').value = nameEl ? nameEl.textContent.trim() : '';
-    document.getElementById('ed-phone').value = '';
-    document.getElementById('ed-memo').value = '';
-    document.getElementById('ed-consent').checked = true;
-    /* "38일 전" → 오늘에서 38일 전 날짜로 채움 */
-    var iso = '';
-    if(visitEl){
-      var m = visitEl.textContent.match(/(\d+)/);
-      if(m){ var d = new Date(); d.setDate(d.getDate() - parseInt(m[1],10)); iso = d.toISOString().slice(0,10); }
-    }
-    document.getElementById('ed-visit').value = iso;
+  /* ---------- 고객 상세·수정 ---------- */
+  var activeCustomerId = '';
+  var activeCustomerDetail = null;
+  function fullPhoneLabel(value){
+    var phone = String(value || '').replace(/[^0-9]/g, '');
+    if(phone.length === 11) return phone.slice(0,3)+'-'+phone.slice(3,7)+'-'+phone.slice(7);
+    if(phone.length === 10) return phone.slice(0,3)+'-'+phone.slice(3,6)+'-'+phone.slice(6);
+    return phone || '-';
+  }
+  function setConsentState(id, agreed){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = agreed ? '동의' : '미동의';
+    el.className = 'consent-state ' + (agreed ? 'on' : 'off');
+  }
+  function renderCustomerDetail(customer){
+    activeCustomerDetail = customer;
+    setText('detailCustomerName', customer.name || '-');
+    setText('detailCustomerPhone', fullPhoneLabel(customer.phone));
+    setText('detailLastVisit', customer.last_visit_at ? customerDateLabel(customer.last_visit_at) : '방문 기록 없음');
+    setText('detailVisitCount', Number(customer.visit_count || 0) + '회');
+    setText('detailCreatedAt', customerDateLabel(customer.created_at));
+    setConsentState('detailKakaoConsent', customer.kakao_agreed === true);
+    setConsentState('detailMarketingConsent', customer.marketing_agreed === true);
+    document.getElementById('customerDetailView').hidden = false;
+    document.getElementById('customerEditView').hidden = true;
+    setText('editTitle', '고객 상세');
+  }
+  async function openCustomerDetail(customerId){
+    if(!customerId) return;
+    activeCustomerId = customerId;
+    activeCustomerDetail = null;
+    setText('editTitle', '고객 상세');
+    setText('detailCustomerName', '불러오는 중');
+    setText('detailCustomerPhone', '-');
+    document.getElementById('customerDetailView').hidden = false;
+    document.getElementById('customerEditView').hidden = true;
     document.getElementById('editOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    try{
+      var res = await fetch('/api/owner/customer?customer_id='+encodeURIComponent(customerId), {
+        method:'GET', credentials:'same-origin', headers:{'Accept':'application/json'}
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || '고객 정보를 불러오지 못했습니다.');
+      renderCustomerDetail(data.customer);
+    }catch(e){
+      closeEdit();
+      toast(e.message || '고객 정보를 불러오지 못했습니다.');
+    }
+  }
+  function openEdit(btn){
+    var row = btn ? btn.closest('tr') : null;
+    openCustomerDetail(row ? row.getAttribute('data-customer-id') : '');
+  }
+  function showCustomerEdit(){
+    if(!activeCustomerDetail) return;
+    document.getElementById('ed-name').value = activeCustomerDetail.name || '';
+    document.getElementById('ed-phone').value = activeCustomerDetail.phone || '';
+    document.getElementById('ed-kakao').checked = activeCustomerDetail.kakao_agreed === true;
+    document.getElementById('ed-marketing').checked = activeCustomerDetail.marketing_agreed === true;
+    document.getElementById('customerEditError').classList.remove('show');
+    document.getElementById('customerDetailView').hidden = true;
+    document.getElementById('customerEditView').hidden = false;
+    setText('editTitle', '고객 정보 수정');
+  }
+  function cancelCustomerEdit(){
+    if(activeCustomerDetail) renderCustomerDetail(activeCustomerDetail);
   }
   function closeEdit(){
     document.getElementById('editOverlay').classList.remove('open');
     document.body.style.overflow = '';
+    activeCustomerId = '';
+    activeCustomerDetail = null;
   }
   function overlayClose(e){
     if(e.target === document.getElementById('editOverlay')) closeEdit();
   }
-  function saveEdit(){
-    closeEdit();
-    toast('고객정보가 수정되었습니다.');
+  async function saveEdit(){
+    if(!activeCustomerId) return;
+    var button = document.getElementById('saveCustomerButton');
+    var error = document.getElementById('customerEditError');
+    error.classList.remove('show');
+    button.disabled = true;
+    try{
+      var res = await fetch('/api/owner/customer?customer_id='+encodeURIComponent(activeCustomerId), {
+        method:'PATCH',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          name:document.getElementById('ed-name').value.trim(),
+          phone:document.getElementById('ed-phone').value,
+          kakao_agreed:document.getElementById('ed-kakao').checked,
+          marketing_agreed:document.getElementById('ed-marketing').checked
+        })
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || '수정 내용을 저장하지 못했습니다.');
+      renderCustomerDetail(data.customer);
+      await loadOwnerDashboard();
+      toast('고객 정보를 수정했습니다.');
+    }catch(e){
+      error.textContent = e.message || '수정 내용을 저장하지 못했습니다.';
+      error.classList.add('show');
+    }finally{
+      button.disabled = false;
+    }
   }
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape'){ closeEdit(); closeTodayTasks(); }
