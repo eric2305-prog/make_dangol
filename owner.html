@@ -514,7 +514,7 @@
   <aside class="side" id="side">
     <div class="side-brand">
       <div class="logo-revaro">Revaro<span class="dot-me">.me</span></div>
-      <div class="side-store">라온 헤어 신촌점</div>
+      <div class="side-store" id="ownerStoreNameSide">불러오는 중</div>
     </div>
     <ul class="menu">
       <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
@@ -533,7 +533,7 @@
       <div class="tt">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="menu-btn" onclick="toggleSide(true)" aria-label="메뉴 열기">☰</button>
-          <h1>라온 헤어 신촌점</h1>
+          <h1 id="ownerStoreNameTitle">불러오는 중</h1>
         </div>
         <div class="meta">
           <span id="today">오늘</span>
@@ -731,7 +731,7 @@
     <div class="panel" id="settingsPanel">
       <div class="panel-head"><div><h2>매장 설정</h2><div class="sub">예약 링크를 등록하면 AI 메시지에 자동으로 포함됩니다.</div></div></div>
       <div class="set-body">
-        <div class="field"><label>매장명</label><input class="input" id="set-name" type="text" value="라온 헤어 신촌점"></div>
+        <div class="field"><label>매장명</label><input class="input" id="set-name" type="text" value="" placeholder="매장명 불러오는 중"></div>
         <div class="field"><label>대표 전화번호</label><input class="input" id="set-tel" inputmode="numeric" placeholder="0212345678" value="0212345678"></div>
         <div class="field"><label>예약 링크</label><input class="input" id="set-link" type="url" placeholder="https://booking.naver.com/..." value="https://booking.naver.com/example"></div>
         <div class="field"><label>기본 안내 문구</label><textarea class="input" id="set-guide" placeholder="예약은 아래 링크에서 편하게 남겨주세요.">예약은 아래 링크에서 편하게 남겨주세요.</textarea></div>
@@ -1307,10 +1307,10 @@
       });
       var recentRows = response.recent_customers || [];
       if(store.name){
-        var title = document.querySelector('.top h1');
-        var sideStore = document.querySelector('.side-store');
-        if(title) title.textContent = store.name;
-        if(sideStore) sideStore.textContent = store.name;
+        setText('ownerStoreNameTitle', store.name);
+        setText('ownerStoreNameSide', store.name);
+        var settingsStoreName = document.getElementById('set-name');
+        if(settingsStoreName) settingsStoreName.value = store.name;
       }
       setText('owner-message-count', metrics.pending_messages || 0);
       setText('owner-total-count', metrics.total_customers || 0);

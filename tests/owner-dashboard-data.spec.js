@@ -131,6 +131,9 @@ test.describe('owner dashboard real data', () => {
     expect(html).toContain('id="recentCustomerRows"');
     expect(html).toContain('아직 등록된 고객이 없어요.');
     expect(html).toContain('아직 재방문 관리 대상 고객이 없어요.');
+    expect(html).not.toContain('라온 헤어 신촌점');
+    expect(html).toContain('id="ownerStoreNameTitle"');
+    expect(html).toContain('id="ownerStoreNameSide"');
   });
 
   test('real data cards and lists fit desktop and mobile viewports', async ({ page }) => {
@@ -139,6 +142,9 @@ test.describe('owner dashboard real data', () => {
     await page.evaluate(() => {
       document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
       document.querySelector('#screen-dash').classList.add('active');
+      setText('ownerStoreNameTitle', '테스트 매장');
+      setText('ownerStoreNameSide', '테스트 매장');
+      document.querySelector('#set-name').value = '테스트 매장';
       setText('owner-total-count', 12);
       setText('owner-recommend-count', 2);
       renderRecentCustomers([{
@@ -161,6 +167,9 @@ test.describe('owner dashboard real data', () => {
     });
 
     await expect(page.locator('#owner-total-count')).toHaveText('12');
+    await expect(page.locator('#ownerStoreNameTitle')).toHaveText('테스트 매장');
+    await expect(page.locator('#ownerStoreNameSide')).toHaveText('테스트 매장');
+    expect(await page.locator('#set-name').inputValue()).toBe('테스트 매장');
     await expect(page.locator('#recentCustomerRows')).toContainText('최근고객');
     await expect(page.locator('#visitRows')).toContainText('지금 안내');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
