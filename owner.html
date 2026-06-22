@@ -518,6 +518,7 @@
     </div>
     <ul class="menu">
       <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
+      <li><button onclick="scrollTo2('customerListPanel')"><span class="mi">♙</span>고객 목록</button></li>
       <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 관리</button></li>
       <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>오늘 보낼 메시지</button></li>
       <li><button onclick="scrollTo2('sentPanel')"><span class="mi">✓</span>보낸 메시지</button></li>
@@ -565,6 +566,20 @@
         <thead><tr><th>고객명</th><th>등록일</th><th>방문 횟수</th></tr></thead>
         <tbody id="recentCustomerRows">
           <tr><td colspan="3" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 고객 목록 -->
+    <div class="panel" id="customerListPanel">
+      <div class="panel-head">
+        <div><h2>고객 목록</h2><div class="sub">우리 매장에 등록된 고객과 방문 현황입니다.</div></div>
+        <span class="count" id="customerListCount">0명</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>고객명</th><th>휴대폰 뒷자리</th><th>최근 방문일</th><th>방문 횟수</th></tr></thead>
+        <tbody id="customerListRows">
+          <tr><td colspan="4" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1224,6 +1239,27 @@
     }).join('');
     setText('recentCustomersCount', rows.length + '명');
   }
+  function renderCustomerList(rows){
+    var body = document.getElementById('customerListRows');
+    if(!body) return;
+    if(!rows || !rows.length){
+      body.innerHTML = '<tr><td colspan="4" class="dashboard-empty">아직 등록된 고객이 없어요.<br>매장 QR로 첫 고객을 등록해 보세요.</td></tr>';
+      setText('customerListCount', '0명');
+      return;
+    }
+    body.innerHTML = rows.map(function(c){
+      var name = c.name || '고객';
+      var initial = name.charAt(0) || '고';
+      var lastVisit = c.last_visit_at ? customerDateLabel(c.last_visit_at) : '방문 기록 없음';
+      return '<tr data-customer-id="'+escapeHtml(c.id || '')+'">' +
+        '<td class="cell-cust"><div class="cust"><span class="av">'+escapeHtml(initial)+'</span><span class="nm">'+escapeHtml(name)+'</span></div></td>' +
+        '<td data-l="휴대폰 뒷자리">'+escapeHtml(c.phone_last4 || '****')+'</td>' +
+        '<td data-l="최근 방문일">'+escapeHtml(lastVisit)+'</td>' +
+        '<td data-l="방문 횟수">'+Number(c.visit_count || 0)+'회</td>' +
+      '</tr>';
+    }).join('');
+    setText('customerListCount', rows.length + '명');
+  }
   var ownerRegistrationUrl = '';
   var ownerQrStoreId = '';
 
@@ -1306,6 +1342,7 @@
         return customer.status_kind === 'due' || customer.status_kind === 'soon';
       });
       var recentRows = response.recent_customers || [];
+      var customerListRows = response.customer_list || [];
       if(store.name){
         setText('ownerStoreNameTitle', store.name);
         setText('ownerStoreNameSide', store.name);
@@ -1318,6 +1355,7 @@
       setText('owner-new-count', metrics.new_customers_this_month || 0);
       renderOwnerCustomers(recommendedRows, metrics.recommended_customers || 0);
       renderRecentCustomers(recentRows);
+      renderCustomerList(customerListRows);
       renderQrManagement(store, response.registration_url);
       return true;
     }catch(e){

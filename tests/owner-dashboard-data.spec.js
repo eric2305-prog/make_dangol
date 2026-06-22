@@ -69,7 +69,8 @@ test.describe('owner dashboard real data', () => {
           name: '최근고객',
           phone: '01012345678',
           created_at: '2026-06-23T01:00:00Z',
-          last_visit_at: '2026-06-23T01:00:00Z'
+          last_visit_at: '2026-06-23T01:00:00Z',
+          visit_count: 2
         }]);
       }
       if (String(url).includes('/rest/v1/visits?')) {
@@ -92,6 +93,14 @@ test.describe('owner dashboard real data', () => {
       phone_masked: '010-****-5678',
       visit_count: 2
     })]);
+    expect(body.customer_list).toEqual([expect.objectContaining({
+      name: '최근고객',
+      phone_last4: '5678',
+      last_visit_at: '2026-06-23T01:00:00Z',
+      visit_count: 2
+    })]);
+    expect(body.customer_list[0]).not.toHaveProperty('phone');
+    expect(body.customer_list[0]).not.toHaveProperty('phone_masked');
     expect(res.body).not.toContain('01012345678');
     expect(requestedUrls.find((url) => url.includes('/customers?'))).toContain(`store_id=eq.${storeUuid}`);
     expect(requestedUrls.find((url) => url.includes('/customers?'))).toContain('order=created_at.desc');
@@ -122,6 +131,7 @@ test.describe('owner dashboard real data', () => {
 
     expect(res.statusCode).toBe(200);
     expect(JSON.parse(res.body).recent_customers).toEqual([]);
+    expect(JSON.parse(res.body).customer_list).toEqual([]);
     expect(requestedUrls.some((url) => url.includes('/rest/v1/visits?'))).toBeFalsy();
   });
 
@@ -129,6 +139,7 @@ test.describe('owner dashboard real data', () => {
     const html = fs.readFileSync(path.join(__dirname, '..', 'owner.html'), 'utf8');
     expect(html).toContain('id="owner-total-count">0</span>');
     expect(html).toContain('id="recentCustomerRows"');
+    expect(html).toContain('id="customerListRows"');
     expect(html).toContain('아직 등록된 고객이 없어요.');
     expect(html).toContain('아직 재방문 관리 대상 고객이 없어요.');
     expect(html).not.toContain('라온 헤어 신촌점');
@@ -154,6 +165,13 @@ test.describe('owner dashboard real data', () => {
         created_at: '2026-06-23T01:00:00Z',
         visit_count: 2
       }]);
+      renderCustomerList([{
+        id: 'customer-1',
+        name: '최근고객',
+        phone_last4: '5678',
+        last_visit_at: '2026-06-23T01:00:00Z',
+        visit_count: 2
+      }]);
       renderOwnerCustomers([{
         id: 'customer-1',
         name: '최근고객',
@@ -171,6 +189,9 @@ test.describe('owner dashboard real data', () => {
     await expect(page.locator('#ownerStoreNameSide')).toHaveText('테스트 매장');
     expect(await page.locator('#set-name').inputValue()).toBe('테스트 매장');
     await expect(page.locator('#recentCustomerRows')).toContainText('최근고객');
+    await expect(page.locator('#customerListRows')).toContainText('최근고객');
+    await expect(page.locator('#customerListRows')).toContainText('5678');
+    await expect(page.locator('#customerListRows')).not.toContainText('01012345678');
     await expect(page.locator('#visitRows')).toContainText('지금 안내');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
 

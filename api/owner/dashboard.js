@@ -15,6 +15,11 @@ function maskPhone(phone) {
   return '****';
 }
 
+function phoneLast4(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  return digits.length >= 4 ? digits.slice(-4) : '****';
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -48,10 +53,11 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 500, { ok: false, message: '매장 정보를 확인할 수 없습니다.' });
     }
 
-    const recentRows = await serviceSelect(
+    const customerRows = await serviceSelect(
       'customers',
-      `select=id,name,phone,created_at,last_visit_at&store_id=eq.${encodeURIComponent(storeUuid)}&order=created_at.desc&limit=5`
+      `select=id,name,phone,created_at,last_visit_at,visit_count&store_id=eq.${encodeURIComponent(storeUuid)}&order=created_at.desc`
     );
+    const recentRows = customerRows.slice(0, 5);
     const customerIds = recentRows.map((customer) => customer.id).filter(Boolean);
     const visitRows = customerIds.length
       ? await serviceSelect(
@@ -71,11 +77,19 @@ module.exports = async function handler(req, res) {
       last_visit_at: customer.last_visit_at,
       visit_count: visitCounts[customer.id] || 0
     }));
+    const customerList = customerRows.map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      phone_last4: phoneLast4(customer.phone),
+      last_visit_at: customer.last_visit_at,
+      visit_count: Number(customer.visit_count || 0)
+    }));
 
     return sendJson(res, 200, {
       ok: true,
       snapshot: result.snapshot,
       recent_customers: recentCustomers,
+      customer_list: customerList,
       expires_at: result.expires_at,
       registration_url: `https://www.revaro.me/register?store_id=${encodeURIComponent(storeId)}`
     });
