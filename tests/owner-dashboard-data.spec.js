@@ -150,6 +150,7 @@ test.describe('owner dashboard real data', () => {
     expect(html).not.toContain('라온 헤어 신촌점');
     expect(html).toContain('id="ownerStoreNameTitle"');
     expect(html).toContain('id="ownerStoreNameSide"');
+    expect(html).toContain('<th>적용 기준</th>');
   });
 
   test('real data cards and lists fit desktop and mobile viewports', async ({ page }) => {
@@ -186,6 +187,7 @@ test.describe('owner dashboard real data', () => {
         visit_count: 2,
         last_visit_days: 31,
         expected_revisit_label: '지남',
+        revisit_basis_label: '실제 방문 간격',
         status_kind: 'due',
         status_label: '지금 안내'
       }], 2);
@@ -200,6 +202,7 @@ test.describe('owner dashboard real data', () => {
     await expect(page.locator('#customerListRows')).toContainText('5678');
     await expect(page.locator('#customerListRows')).not.toContainText('01012345678');
     await expect(page.locator('#visitRows')).toContainText('지금 안내');
+    await expect(page.locator('#visitRows')).toContainText('실제 방문 간격');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
 
     await page.evaluate(() => {

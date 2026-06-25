@@ -620,7 +620,7 @@
       </div>
       <table class="tbl">
         <thead>
-          <tr><th>고객명</th><th>마지막 방문</th><th>예상 재방문 시점</th><th>상태</th><th>액션</th></tr>
+          <tr><th>고객명</th><th>마지막 방문</th><th>예상 재방문 시점</th><th>적용 기준</th><th>상태</th><th>액션</th></tr>
         </thead>
         <tbody id="visitRows">
           <tr><td colspan="5" class="dashboard-empty">고객 정보를 불러오는 중입니다.</td></tr>
@@ -1237,7 +1237,7 @@
     var body = document.getElementById('visitRows');
     if(!body) return;
     if(!rows || !rows.length){
-      body.innerHTML = '<tr><td colspan="5" class="dashboard-empty">아직 재방문 관리 대상 고객이 없어요.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" class="dashboard-empty">아직 재방문 관리 대상 고객이 없어요.</td></tr>';
       setText('visitPanelCount', '0명');
       return;
     }
@@ -1256,6 +1256,7 @@
         '</span></div></td>' +
         '<td data-l="마지막 방문">'+escapeHtml(visitDaysLabel(c.last_visit_days))+'</td>' +
         '<td data-l="예상 재방문 시점">'+escapeHtml(c.expected_revisit_label || '-')+'</td>' +
+        '<td data-l="적용 기준">'+escapeHtml(c.revisit_basis_label || '-')+'</td>' +
         '<td data-l="상태"><span class="pill '+pillClass+'">'+escapeHtml(pillLabel)+'</span></td>' +
         '<td data-l="액션"><button class="btn-mini'+solid+'" onclick="goToMsg(this)">AI 메시지 확인</button> <button class="btn-mini" onclick="openEdit(this)">고객정보 수정</button></td>' +
       '</tr>';

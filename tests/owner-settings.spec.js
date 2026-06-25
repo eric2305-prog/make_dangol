@@ -35,7 +35,7 @@ function request(method, body, authenticated = true) {
   };
 }
 
-function sessionSnapshot(customers = []) {
+function sessionSnapshot() {
   return {
     ok: true,
     expires_at: '2026-06-26T10:00:00Z',
@@ -48,8 +48,8 @@ function sessionSnapshot(customers = []) {
         phone: '0212345678',
         address: '서울 테스트로 1'
       },
-      metrics: { pending_messages: 0, total_customers: customers.length, recommended_customers: 0, new_customers_this_month: 0 },
-      customers
+      metrics: { pending_messages: 0, total_customers: 0, recommended_customers: 0, new_customers_this_month: 0 },
+      customers: []
     }
   };
 }
@@ -141,20 +141,42 @@ test.describe('owner settings security and persistence', () => {
     expect(body.address).toBeUndefined();
   });
 
-  test('dashboard applies default revisit cycle only to customers with insufficient visit history', async () => {
+  test('dashboard applies desired cycle to insufficient data and actual average interval to repeat customers', async () => {
     const calls = [];
     global.fetch = async (url) => {
       calls.push(String(url));
-      if (String(url).includes('/rpc/owner_session_dashboard')) {
-        return jsonResponse(sessionSnapshot([
-          { id: 'c1', name: '신규 고객', phone_masked: '010-****-1111', visit_count: 1, last_visit_days: 20, status_kind: 'ok', status_label: '여유 있음' },
-          { id: 'c2', name: '패턴 고객', phone_masked: '010-****-2222', visit_count: 3, last_visit_days: 20, status_kind: 'ok', status_label: '여유 있음' }
-        ]));
-      }
+      if (String(url).includes('/rpc/owner_session_dashboard')) return jsonResponse(sessionSnapshot());
       if (String(url).includes('/rest/v1/settings?')) {
         return jsonResponse([{ reservation_url: '', revisit_cycle_days: 14, default_message: '기본 문구' }]);
       }
-      if (String(url).includes('/rest/v1/customers?')) return jsonResponse([]);
+      if (String(url).includes('/rest/v1/customers?')) {
+        return jsonResponse([
+          {
+            id: '10000000-0000-4000-8000-000000000001',
+            name: '신규 고객',
+            phone: '01011112222',
+            created_at: '2026-01-01T00:00:00Z',
+            last_visit_at: '2026-01-01T00:00:00Z',
+            visit_count: 1
+          },
+          {
+            id: '10000000-0000-4000-8000-000000000002',
+            name: '반복 고객',
+            phone: '01033334444',
+            created_at: '2026-01-01T00:00:00Z',
+            last_visit_at: '2026-06-20T00:00:00Z',
+            visit_count: 3
+          }
+        ]);
+      }
+      if (String(url).includes('/rest/v1/visits?')) {
+        return jsonResponse([
+          { customer_id: '10000000-0000-4000-8000-000000000001', visit_date: '2026-01-01T00:00:00Z' },
+          { customer_id: '10000000-0000-4000-8000-000000000002', visit_date: '2026-01-01T00:00:00Z' },
+          { customer_id: '10000000-0000-4000-8000-000000000002', visit_date: '2026-03-01T00:00:00Z' },
+          { customer_id: '10000000-0000-4000-8000-000000000002', visit_date: '2026-06-20T00:00:00Z' }
+        ]);
+      }
       return jsonResponse([], 404);
     };
 
@@ -163,14 +185,20 @@ test.describe('owner settings security and persistence', () => {
     expect(res.statusCode).toBe(200);
     const customers = JSON.parse(res.body).snapshot.customers;
     expect(customers[0]).toEqual(expect.objectContaining({
-      expected_revisit_label: '지남',
+      name: '신규 고객',
+      revisit_basis: 'desired_cycle',
+      revisit_basis_label: '희망 주기',
       status_kind: 'due',
       status_label: '지금 안내'
     }));
     expect(customers[1]).toEqual(expect.objectContaining({
+      name: '반복 고객',
+      revisit_basis: 'actual_interval',
+      revisit_basis_label: '실제 방문 간격',
       status_kind: 'ok',
       status_label: '여유 있음'
     }));
     expect(calls.find((url) => url.includes('/rest/v1/settings?'))).toContain(`store_id=eq.${STORE_UUID}`);
+    expect(calls.find((url) => url.includes('/rest/v1/visits?'))).toContain(`store_id=eq.${STORE_UUID}`);
   });
 });
