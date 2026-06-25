@@ -348,6 +348,15 @@
   .set-body{padding:20px}
   .set-body .field:last-of-type{margin-bottom:18px}
   .set-body textarea.input{resize:vertical;min-height:64px;line-height:1.5}
+  .readonly-box{border:1px solid var(--line);border-radius:14px;background:var(--tint);padding:16px;margin-bottom:18px}
+  .readonly-head{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .readonly-head b{font-size:.98rem;color:var(--ink)}
+  .readonly-head span{font-size:.84rem;color:var(--muted);line-height:1.45}
+  .readonly-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .readonly-item{background:#fff;border:1px solid var(--line-soft);border-radius:11px;padding:11px 12px;min-width:0}
+  .readonly-item span{display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .readonly-item strong{display:block;font-size:.93rem;color:var(--ink);font-weight:800;word-break:break-word}
+  .field-help{font-size:.82rem;color:var(--muted);line-height:1.5;margin-top:7px}
 
   /* qr panel */
   .qr-panel{display:flex;gap:22px;align-items:center;padding:20px;flex-wrap:wrap}
@@ -451,6 +460,7 @@
     .msg-prev{max-width:62%;white-space:normal;text-align:right;font-size:.9rem}
     .sent-result-cell{align-items:flex-start!important}
     .qr-panel{justify-content:center}
+    .readonly-grid{grid-template-columns:1fr}
     .topbar .tt h1{font-size:1.3rem}
     .modal-overlay{align-items:flex-end;padding:0}
     .modal{max-width:none;width:100%;max-height:92dvh;border-radius:18px 18px 0 0;animation:sheetup .2s ease}
@@ -762,12 +772,27 @@
 
     <!-- 매장 설정 -->
     <div class="panel" id="settingsPanel">
-      <div class="panel-head"><div><h2>매장 설정</h2><div class="sub">예약 링크를 등록하면 AI 메시지에 자동으로 포함됩니다.</div></div></div>
+      <div class="panel-head"><div><h2>매장 설정</h2><div class="sub">매장 기본정보를 확인하고 운영 설정을 저장하세요.</div></div></div>
       <div class="set-body">
-        <div class="field"><label>매장명</label><input class="input" id="set-name" type="text" value="" placeholder="매장명 불러오는 중"></div>
-        <div class="field"><label>대표 전화번호</label><input class="input" id="set-tel" inputmode="numeric" placeholder="0212345678" value="0212345678"></div>
-        <div class="field"><label>예약 링크</label><input class="input" id="set-link" type="url" placeholder="https://booking.naver.com/..." value="https://booking.naver.com/example"></div>
-        <div class="field"><label>기본 안내 문구</label><textarea class="input" id="set-guide" placeholder="예약은 아래 링크에서 편하게 남겨주세요.">예약은 아래 링크에서 편하게 남겨주세요.</textarea></div>
+        <div class="readonly-box">
+          <div class="readonly-head">
+            <b>매장 기본정보</b>
+            <span>매장명, 전화번호, 주소 변경은 운영자에게 문의해 주세요.</span>
+          </div>
+          <div class="readonly-grid">
+            <div class="readonly-item"><span>매장명</span><strong id="set-name">불러오는 중</strong></div>
+            <div class="readonly-item"><span>매장 전화번호</span><strong id="set-tel">-</strong></div>
+            <div class="readonly-item"><span>매장 주소</span><strong id="set-address">-</strong></div>
+            <div class="readonly-item"><span>store_id</span><strong id="set-store-id">-</strong></div>
+          </div>
+        </div>
+        <div class="field"><label>예약 링크</label><input class="input" id="set-link" type="url" placeholder="https://booking.naver.com/..."></div>
+        <div class="field">
+          <label>희망 재방문 주기</label>
+          <input class="input" id="set-revisit-days" type="number" min="7" max="180" step="1" placeholder="30">
+          <p class="field-help">방문 기록이 부족한 고객에게 우선 적용됩니다. 이후 고객별 방문 데이터에 따라 자동 조정됩니다.</p>
+        </div>
+        <div class="field"><label>기본 메시지 문구</label><textarea class="input" id="set-guide" placeholder="방문 주기에 맞춰 다시 안내드릴게요."></textarea></div>
         <button class="btn btn-primary btn-lg" style="width:100%" onclick="saveStore()">매장 설정 저장</button>
       </div>
     </div>
@@ -1374,11 +1399,10 @@
       });
       var recentRows = response.recent_customers || [];
       var customerListRows = response.customer_list || [];
+      var settings = response.settings || {};
       if(store.name){
         setText('ownerStoreNameTitle', store.name);
         setText('ownerStoreNameSide', store.name);
-        var settingsStoreName = document.getElementById('set-name');
-        if(settingsStoreName) settingsStoreName.value = store.name;
       }
       setText('owner-message-count', metrics.pending_messages || 0);
       setText('owner-total-count', metrics.total_customers || 0);
@@ -1388,6 +1412,7 @@
       renderRecentCustomers(recentRows);
       renderCustomerList(customerListRows);
       renderQrManagement(store, response.registration_url);
+      renderStoreSettings(store, settings);
       return true;
     }catch(e){
       return false;
@@ -1395,7 +1420,8 @@
   }
 
   /* ---------- 예약 링크 / 매장 설정 ---------- */
-  var bookingLink = 'https://booking.naver.com/example';
+  var bookingLink = '';
+  var defaultMessageTemplate = '방문 주기에 맞춰 다시 안내드릴게요.';
 
   function renderBooking(){
     var has = !!bookingLink;
@@ -1410,16 +1436,58 @@
       if(line){ line.style.display = (has && chk && chk.checked) ? 'flex' : 'none'; }
     });
   }
+  function renderDefaultMessageTemplate(){
+    document.querySelectorAll('.qmsg .qbody').forEach(function(body){
+      if(defaultMessageTemplate){
+        body.textContent = defaultMessageTemplate;
+      }
+    });
+  }
+  function renderStoreSettings(store, settings){
+    setText('set-name', store.name || '-');
+    setText('set-tel', store.phone || '-');
+    setText('set-address', store.address || '-');
+    setText('set-store-id', store.store_id || store.store_code || '-');
+    var link = document.getElementById('set-link');
+    var days = document.getElementById('set-revisit-days');
+    var guide = document.getElementById('set-guide');
+    bookingLink = settings.reservation_url || '';
+    defaultMessageTemplate = settings.default_message || '방문 주기에 맞춰 다시 안내드릴게요.';
+    if(link) link.value = bookingLink;
+    if(days) days.value = settings.revisit_cycle_days || 30;
+    if(guide) guide.value = defaultMessageTemplate;
+    renderBooking();
+    renderDefaultMessageTemplate();
+  }
   function toggleBooking(chk){
     var card = chk.closest('.qmsg');
     var line = card ? card.querySelector('.qbk-line') : null;
     if(line){ line.style.display = chk.checked ? 'flex' : 'none'; }
   }
-  function saveStore(){
-    var v = document.getElementById('set-link').value.trim();
-    bookingLink = v;
-    renderBooking();
-    toast('매장 설정이 저장되었습니다.');
+  async function saveStore(){
+    var link = document.getElementById('set-link');
+    var days = document.getElementById('set-revisit-days');
+    var guide = document.getElementById('set-guide');
+    var payload = {
+      reservation_url: link ? link.value.trim() : '',
+      revisit_cycle_days: days ? days.value : '',
+      default_message: guide ? guide.value.trim() : ''
+    };
+    try{
+      var res = await fetch('/api/owner/settings', {
+        method:'PATCH',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || '매장 설정을 저장하지 못했습니다.');
+      renderStoreSettings(data.store || {}, data.settings || {});
+      toast('매장 설정이 저장되었습니다.');
+      await loadOwnerDashboard();
+    }catch(e){
+      toast(e.message || '매장 설정을 저장하지 못했습니다.');
+    }
   }
 
   /* ---------- 고객 상세·수정 ---------- */

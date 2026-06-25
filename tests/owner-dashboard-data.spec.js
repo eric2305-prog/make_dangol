@@ -73,6 +73,9 @@ test.describe('owner dashboard real data', () => {
           visit_count: 2
         }]);
       }
+      if (String(url).includes('/rest/v1/settings?')) {
+        return jsonResponse([{ reservation_url: '', revisit_cycle_days: 30, default_message: '기본 문구' }]);
+      }
       if (String(url).includes('/rest/v1/visits?')) {
         return jsonResponse([
           { customer_id: '10000000-0000-4000-8000-000000000001' },
@@ -122,6 +125,7 @@ test.describe('owner dashboard real data', () => {
           }
         });
       }
+      if (String(url).includes('/rest/v1/settings?')) return jsonResponse([]);
       if (String(url).includes('/rest/v1/customers?')) return jsonResponse([]);
       return jsonResponse({}, 404);
     };
@@ -156,7 +160,7 @@ test.describe('owner dashboard real data', () => {
       document.querySelector('#screen-dash').classList.add('active');
       setText('ownerStoreNameTitle', '테스트 매장');
       setText('ownerStoreNameSide', '테스트 매장');
-      document.querySelector('#set-name').value = '테스트 매장';
+      setText('set-name', '테스트 매장');
       setText('owner-total-count', 12);
       setText('owner-recommend-count', 2);
       renderRecentCustomers([{
@@ -190,7 +194,7 @@ test.describe('owner dashboard real data', () => {
     await expect(page.locator('#owner-total-count')).toHaveText('12');
     await expect(page.locator('#ownerStoreNameTitle')).toHaveText('테스트 매장');
     await expect(page.locator('#ownerStoreNameSide')).toHaveText('테스트 매장');
-    expect(await page.locator('#set-name').inputValue()).toBe('테스트 매장');
+    await expect(page.locator('#set-name')).toHaveText('테스트 매장');
     await expect(page.locator('#recentCustomerRows')).toContainText('최근고객');
     await expect(page.locator('#customerListRows')).toContainText('최근고객');
     await expect(page.locator('#customerListRows')).toContainText('5678');

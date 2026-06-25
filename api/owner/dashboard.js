@@ -15,6 +15,48 @@ function maskPhone(phone) {
   return '****';
 }
 
+function defaultSettings(row) {
+  return {
+    reservation_url: row && row.reservation_url ? row.reservation_url : '',
+    revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : 30),
+    default_message: row && row.default_message ? row.default_message : '방문 주기에 맞춰 다시 안내드릴게요.'
+  };
+}
+
+function revisitLabel(remainingDays) {
+  if (remainingDays <= 0) return '지남';
+  if (remainingDays === 1) return '내일';
+  if (remainingDays <= 7) return '이번 주';
+  return `${remainingDays}일 뒤`;
+}
+
+function applyDefaultRevisitCycle(customer, revisitCycleDays) {
+  const visitCount = Number(customer.visit_count || 0);
+  const lastVisitDays = customer.last_visit_days === null || customer.last_visit_days === undefined
+    ? null
+    : Number(customer.last_visit_days);
+  if (visitCount >= 2 || lastVisitDays === null || Number.isNaN(lastVisitDays)) return customer;
+
+  const days = Number(revisitCycleDays || 30);
+  const remainingDays = days - lastVisitDays;
+  let statusKind = 'ok';
+  let statusLabel = '여유 있음';
+  if (remainingDays <= 0) {
+    statusKind = 'due';
+    statusLabel = '지금 안내';
+  } else if (remainingDays <= 7) {
+    statusKind = 'soon';
+    statusLabel = '미리 안내';
+  }
+
+  return {
+    ...customer,
+    expected_revisit_label: revisitLabel(remainingDays),
+    status_kind: statusKind,
+    status_label: statusLabel
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -47,6 +89,22 @@ module.exports = async function handler(req, res) {
     if (!storeUuid || !/^[0-9a-f-]{36}$/i.test(storeUuid)) {
       return sendJson(res, 500, { ok: false, message: '매장 정보를 확인할 수 없습니다.' });
     }
+
+    const settingsRows = await serviceSelect(
+      'settings',
+      `select=reservation_url,revisit_cycle_days,default_message&store_id=eq.${encodeURIComponent(storeUuid)}&limit=1`
+    );
+    const settings = defaultSettings(settingsRows[0] || null);
+    const snapshotCustomers = Array.isArray(result.snapshot.customers)
+      ? result.snapshot.customers.map((customer) => applyDefaultRevisitCycle(customer, settings.revisit_cycle_days))
+      : [];
+    result.snapshot.customers = snapshotCustomers;
+    result.snapshot.metrics = {
+      ...(result.snapshot.metrics || {}),
+      recommended_customers: snapshotCustomers.filter((customer) => (
+        customer.status_kind === 'due' || customer.status_kind === 'soon'
+      )).length
+    };
 
     const customerRows = await serviceSelect(
       'customers',
@@ -87,6 +145,7 @@ module.exports = async function handler(req, res) {
       snapshot: result.snapshot,
       recent_customers: recentCustomers,
       customer_list: customerList,
+      settings,
       expires_at: result.expires_at,
       registration_url: `https://www.revaro.me/register?store_id=${encodeURIComponent(storeId)}`
     });

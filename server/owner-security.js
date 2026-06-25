@@ -143,6 +143,28 @@ async function serviceUpdate(resource, query, body) {
   return response.json();
 }
 
+async function serviceUpsert(resource, query, body) {
+  const url = supabaseUrl();
+  const serviceRoleKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const response = await fetch(`${url}/rest/v1/${resource}?${query}`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=representation'
+    },
+    body: JSON.stringify(body || {})
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Supabase upsert failed: ${resource} (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
 module.exports = {
   COOKIE_NAME,
   SESSION_SECONDS,
@@ -157,6 +179,7 @@ module.exports = {
   serviceRpc,
   serviceSelect,
   serviceUpdate,
+  serviceUpsert,
   sessionCookie,
   sha256,
   supabaseAnonKey,
