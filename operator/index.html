@@ -7,17 +7,17 @@
 <style>
   :root{--kakao:#FEE500;--ink:#191919;--soft:#3C3C3C;--muted:#767676;--line:#ECECEC;--line2:#F2F2F2;--bg:#FAFAF8;--yellow:#FFFBE6;--yellow-line:#FFF6C7;--green:#15803D;--amber:#B8860B;--red:#E0483C;--blue:#2563EB}
   *{box-sizing:border-box} body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.55} button,input,select,textarea{font:inherit} button{cursor:pointer}
-  .app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:22px 16px}.brand{font-size:1.25rem;font-weight:800;letter-spacing:-.025em}.brand span{color:#F2D200}.sub{font-size:.75rem;color:var(--muted);font-weight:700;margin-top:3px}.side-head{padding:6px 10px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}.side{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:22px 16px}.brand{font-size:1.25rem;font-weight:800}.brand span{color:#F2D200}.sub{font-size:.75rem;color:var(--muted);font-weight:700;margin-top:3px}.side-head{padding:6px 10px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
   .menu{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}.menu button{width:100%;border:0;background:transparent;text-align:left;border-radius:11px;padding:11px 12px;color:var(--soft);font-size:.875rem;font-weight:600}.menu button:hover{background:var(--bg);color:var(--ink)}.menu button.on{background:#FFFBE0;color:var(--ink)}.logout{margin-top:18px;color:#C0453B!important}
-  .main{padding:28px 30px 70px;max-width:1200px;width:100%}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}.top h1{font-size:1.25rem;font-weight:800;letter-spacing:-.025em;margin:0}.top p{margin:5px 0 0;color:var(--muted);font-size:.875rem}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:#EEF6EE;padding:8px 13px;font-size:.75rem;font-weight:700;color:#3F8E45}
-  .screen{display:none}.screen.active{display:block}.grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:22px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 1px 2px rgba(25,25,25,.04)}.kpi.accent{background:var(--yellow);border-color:var(--yellow-line)}.kpi .label{font-size:.75rem;color:var(--muted);font-weight:600;margin-bottom:7px}.kpi .value{font-size:1.5rem;font-weight:800;letter-spacing:-.025em;line-height:1}.kpi .unit{font-size:.875rem;color:var(--muted);font-weight:500;margin-left:3px}
+  .main{padding:28px 30px 70px;max-width:1200px;width:100%}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:22px}.top h1{font-size:1.25rem;font-weight:800;margin:0}.top p{margin:5px 0 0;color:var(--muted);font-size:.875rem}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:#EEF6EE;padding:8px 13px;font-size:.75rem;font-weight:700;color:#3F8E45}
+  .screen{display:none}.screen.active{display:block}.grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:22px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 1px 2px rgba(25,25,25,.04)}.kpi.accent{background:var(--yellow);border-color:var(--yellow-line)}.kpi .label{font-size:.75rem;color:var(--muted);font-weight:600;margin-bottom:7px}.kpi .value{font-size:1.5rem;font-weight:800;line-height:1}.kpi .unit{font-size:.875rem;color:var(--muted);font-weight:500;margin-left:3px}
   .panel{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(25,25,25,.04);overflow:hidden;margin-bottom:18px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line2)}.panel-head h2{font-size:1.08rem;margin:0}.panel-head .hint{font-size:.82rem;color:var(--muted);margin-top:2px}.panel-body{padding:18px 20px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tabs{display:flex;flex-wrap:wrap;gap:8px}.tab{border:0;border-radius:999px;padding:7px 13px;font-weight:700;font-size:.875rem;background:var(--line2);color:var(--soft)}.tab.on{background:var(--ink);color:#fff}.tools{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:9px 12px}.search input{border:0;outline:0;background:transparent;width:220px}
-  table{width:100%;border-collapse:collapse} th{background:var(--bg);color:var(--muted);font-size:.75rem;font-weight:700;text-align:left;padding:11px 14px} td{border-top:1px solid var(--line2);padding:13px 14px;font-size:.875rem;vertical-align:middle}.name{font-weight:700}.muted{color:var(--muted);font-size:.75rem}.badge{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:700}.green{background:#ECFDF3;color:var(--green)}.amber{background:#FFF6D6;color:var(--amber)}.gray{background:#F4F4F5;color:#71717A}.red{background:#FDECEC;color:var(--red)}.dark{background:#E4E4E7;color:#3F3F46}.blue{background:#EFF6FF;color:var(--blue)}
-  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-size:.75rem;font-weight:700;color:var(--ink)}.btn.primary{border-color:var(--kakao);background:var(--kakao)}.btn:hover{filter:brightness(.98)}.btn:disabled{cursor:not-allowed;opacity:.45;filter:none}
-  .task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 20px;border-top:1px solid var(--line2)}.task:first-child{border-top:0}.task-title{font-weight:700}.task-desc{color:var(--muted);font-size:.75rem;margin-top:2px}.empty{padding:44px 20px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--soft);margin-bottom:5px}
+  table{width:100%;border-collapse:collapse} th{background:var(--bg);color:var(--muted);font-size:.75rem;font-weight:700;text-align:left;padding:11px 14px} td{border-top:1px solid var(--line2);padding:13px 14px;font-size:.875rem;vertical-align:middle}.name{font-weight:700}.muted{color:var(--muted);font-size:.75rem}.badge{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:700}.green{background:#ECFDF3;color:var(--green)}.amber{background:#FFF6D6;color:var(--amber)}.gray{background:#F4F4F5;color:#71717A}.red{background:#FDECEC;color:var(--red)}.blue{background:#EFF6FF;color:var(--blue)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-size:.75rem;font-weight:700;color:var(--ink)}.btn.primary{border-color:var(--kakao);background:var(--kakao)}.btn:disabled{cursor:not-allowed;opacity:.45}
+  .task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 20px;border-top:1px solid var(--line2)}.task:first-child{border-top:0}.task-title{font-weight:700}.empty{padding:44px 20px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--soft);margin-bottom:5px}
   .drawer{position:fixed;right:0;top:0;height:100vh;width:min(460px,100vw);background:#fff;border-left:1px solid var(--line);box-shadow:-16px 0 40px rgba(25,25,25,.16);z-index:50;transform:translateX(110%);transition:.22s}.drawer.open{transform:none}.drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px;border-bottom:1px solid var(--line)}.drawer-body{padding:20px 22px;overflow:auto;max-height:calc(100vh - 86px)}.close{border:1px solid var(--line);background:#fff;border-radius:10px;width:36px;height:36px}
-  .formrow{margin-bottom:15px}.formrow label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:6px}.formrow input,.formrow select,.formrow textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:0}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;border-radius:999px;padding:11px 16px;font-size:.875rem;font-weight:600;transition:.2s;z-index:80}.toast.show{opacity:1;transform:translateX(-50%)}
+  .formrow{margin-bottom:15px}.formrow label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:6px}.formrow input,.formrow select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:0}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;border-radius:999px;padding:11px 16px;font-size:.875rem;font-weight:600;transition:.2s;z-index:80}.toast.show{opacity:1;transform:translateX(-50%)}
   .pin-notice{margin:0 0 14px;border:1px solid var(--yellow-line);border-radius:12px;background:var(--yellow);padding:12px 13px;font-size:.78rem;color:var(--soft);line-height:1.55}.pin-result{display:none;margin-top:16px;border:1px solid var(--yellow-line);border-radius:14px;background:var(--yellow);padding:16px}.pin-result.show{display:block}.pin-result .once{font-size:.75rem;color:var(--muted);margin-bottom:8px}.pin-code{display:flex;align-items:center;justify-content:space-between;gap:12px}.pin-code strong{font-size:1.65rem;letter-spacing:.16em}.pin-result .btn{flex:none}
   .settings{grid-template-columns:repeat(2,minmax(0,1fr))}.setting-box{border:1px solid var(--line);border-radius:14px;background:#fff;padding:16px}.setting-box h3{font-size:.875rem;font-weight:800;margin:0 0 10px}.setting-box li{margin:7px 0;color:var(--soft)}
   @media(max-width:900px){.app{grid-template-columns:minmax(0,1fr)}.side{position:static;height:auto}.main{padding:20px;min-width:0}.kpis,.two,.settings{grid-template-columns:1fr}.search input{width:150px} table{min-width:760px}.table-wrap{max-width:100%;overflow:auto}}
@@ -31,7 +31,7 @@
     <button class="logout btn" onclick="logout()">로그아웃</button>
   </aside>
   <main class="main">
-    <div class="top"><div><h1 id="pageTitle">운영관리자 대시보드</h1><p>전체 점주, 고객, 발송, 결제 상태를 확인합니다.</p></div><span class="chip">내부 운영자 · <span id="operatorName">확인 중</span></span></div>
+    <div class="top"><div><h1 id="pageTitle">운영관리자 대시보드</h1><p>전체 점주, 매장별 고객 수, 점주/매장 상태를 확인합니다.</p></div><span class="chip">내부 운영자 · <span id="operatorName">확인 중</span></span></div>
     <section class="screen active" id="dashboard"></section>
     <section class="screen" id="stores"></section>
     <section class="screen" id="customers"></section>
@@ -43,71 +43,119 @@
 <aside class="drawer" id="drawer"></aside>
 <div class="toast" id="toast"></div>
 <script>
-let operatorStores=[];
+let operatorStores = [];
+let operatorMetrics = { total_stores:0, active_stores:0, pending_stores:0, suspended_stores:0, total_customers:0 };
+let activeStoreFilter = 'all';
+let activeCustomerFilter = 'all';
 
-const menus=[['dashboard','대시보드'],['stores','점주 관리'],['customers','고객 데이터'],['messages','AI 메시지·발송'],['billing','결제·프로모션'],['settings','기본 설정']];
-const badges={pending:['승인대기','amber'],active:['활성','green'],inactive:['비활성','gray'],blocked:['차단','red'],churned:['해지','dark'],trial:['무료체험','amber'],trial_ending:['체험 종료 임박','amber'],paid:['정상','green'],overdue:['미납','red'],hold:['보류','gray'],new:['신규','blue'],returning:['재방문','green'],at_risk:['이탈위험','red'],dormant:['휴면','gray'],queued:['대기','amber'],sent:['발송완료','green'],failed:['실패','red']};
-const demoStores=[
-{id:'s1',storeName:'라온 헤어 신촌점',ownerName:'김라온',category:'헤어샵',region:'서울 서대문구',phone:'010-1234-5678',joinedAt:'2026.05.02',status:'active',customerCount:312,monthlySentCount:96,plan:'기본',billingStatus:'paid',memo:'재방문율 우수 매장.'},
-{id:'s2',storeName:'뷰티네일 의정부',ownerName:'박지수',category:'네일샵',region:'경기 의정부시',phone:'010-2222-3333',joinedAt:'2026.06.10',status:'pending',customerCount:0,monthlySentCount:0,plan:'기본',billingStatus:'trial',memo:'가입 신청 검토 중.'},
-{id:'s3',storeName:'포레스트 피부관리',ownerName:'이서연',category:'피부관리실',region:'서울 강남구',phone:'010-7777-8888',joinedAt:'2026.04.18',status:'active',customerCount:188,monthlySentCount:54,plan:'기본',billingStatus:'paid',memo:''},
-{id:'s4',storeName:'멍멍살롱 일산',ownerName:'최도현',category:'애견미용',region:'경기 고양시',phone:'010-4545-1212',joinedAt:'2026.03.21',status:'active',customerCount:97,monthlySentCount:23,plan:'기본',billingStatus:'overdue',memo:'이번 달 이용료 미납. 확인 필요.'},
-{id:'s5',storeName:'글로우 헤어 부평',ownerName:'정하늘',category:'헤어샵',region:'인천 부평구',phone:'010-9090-3434',joinedAt:'2026.02.09',status:'inactive',customerCount:142,monthlySentCount:0,plan:'기본',billingStatus:'hold',memo:'2주째 로그인 없음.'},
-{id:'s6',storeName:'코지 네일 판교',ownerName:'한가람',category:'네일샵',region:'경기 성남시',phone:'010-1212-5656',joinedAt:'2026.06.14',status:'pending',customerCount:0,monthlySentCount:0,plan:'기본',billingStatus:'trial',memo:''},
-{id:'s7',storeName:'댕댕뷰티 수원',ownerName:'오서진',category:'애견미용',region:'경기 수원시',phone:'010-5656-9090',joinedAt:'2026.04.21',status:'active',customerCount:121,monthlySentCount:41,plan:'기본',billingStatus:'trial',memo:'3개월 차 결제 안내 예정.'},
-{id:'s8',storeName:'온리뷰티 마포',ownerName:'문하린',category:'피부관리실',region:'서울 마포구',phone:'010-3434-7878',joinedAt:'2026.04.24',status:'active',customerCount:86,monthlySentCount:29,plan:'기본',billingStatus:'trial',memo:'체험 종료 전 안내 필요.'}
+const menus = [
+  ['dashboard','대시보드'],
+  ['stores','점주 관리'],
+  ['customers','매장별 고객 수'],
+  ['messages','AI 메시지·발송'],
+  ['billing','결제·프로모션'],
+  ['settings','기본 설정']
 ];
-const customers=[['김서연','010-****-5678','라온 헤어 신촌점',7,'2026.05.11','at_risk',true],['이준호','010-****-2233','라온 헤어 신촌점',3,'2026.05.25','returning',true],['박지민','010-****-9001','포레스트 피부관리',1,'2026.06.12','new',false],['최은우','010-****-4412','댕댕뷰티 수원',5,'2026.05.30','returning',true],['정하늘','010-****-7788','라온 헤어 신촌점',9,'2026.04.07','dormant',true],['윤서진','010-****-3030','글로우 헤어 부평',4,'2026.05.21','returning',false]];
-const messages=[['라온 헤어 신촌점','김서연','재방문 안내','서연님, 지난번 컬러 잘 유지되고 계신가요?',true,'sent','2026.06.18 10:00','성공'],['포레스트 피부관리','박지민','환영','첫 방문 감사합니다. 다음 관리 시점에 맞춰 안내드릴게요.',false,'queued','2026.06.19 11:00','—'],['멍멍살롱 일산','최은우','혜택 안내','다음 방문 때 쓰실 수 있는 단골 혜택 안내드려요.',true,'failed','2026.06.17 09:30','수신 거부 번호'],['글로우 헤어 부평','윤서진','혜택 안내','곧 뿌리 염색 시기예요. 예약을 도와드릴게요.',false,'failed','2026.06.17 14:00','발송 한도 초과']];
-const metrics={totalStores:142,activeStores:118,newStoresThisMonth:14,churnedStoresThisMonth:6,totalCustomers:8940,sentThisMonth:3210,sendSuccessRate:98.2,expectedRevenue:4106400,expectedAlimtalkCost:240750};
-const won=n=>n.toLocaleString('ko-KR')+'원';
-function badge(v){let b=badges[v]||[v,'gray'];return `<span class="badge ${b[1]}">${b[0]}</span>`}
-function toast(t){let el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2300)}
-function parseDate(v){let [y,m,d]=String(v).split(/[.-]/).map(Number);return new Date(y,m-1,d)}
-function formatDate(d){return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')}
-function addMonths(v,n){let d=parseDate(v);let day=d.getDate();d.setMonth(d.getMonth()+n);if(d.getDate()<day)d.setDate(0);return d}
-function trialEndsAt(s){return formatDate(addMonths(s.joinedAt,2))}
-function daysUntil(v){let end=typeof v==='string'?parseDate(v):v;let now=new Date();let today=new Date(now.getFullYear(),now.getMonth(),now.getDate());return Math.round((end-today)/86400000)}
-function ddayText(d){return d===0?'오늘 종료':'D-'+d}
-function billingStatusOf(s){let d=daysUntil(trialEndsAt(s));return s.billingStatus==='trial'&&d>=0&&d<=7?'trial_ending':s.billingStatus}
-async function logout(){
-  try{await fetch('/api/operator/logout',{method:'POST',credentials:'same-origin'})}catch(e){}
-  location.replace('/operator/login');
-}
-function switchScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.menu button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));document.getElementById('pageTitle').textContent=menus.find(m=>m[0]===id)[1];history.replaceState(null,'','/operator'+(id==='dashboard'?'':'#'+id))}
-function renderMenu(){document.getElementById('menu').innerHTML=menus.map(m=>`<li><button data-id="${m[0]}" class="${m[0]==='dashboard'?'on':''}" onclick="switchScreen('${m[0]}')">${m[1]}</button></li>`).join('')}
-function kpi(label,value,unit='',accent=''){return `<div class="kpi ${accent}"><div class="label">${label}</div><div class="value">${value}${unit?`<span class="unit">${unit}</span>`:''}</div></div>`}
-function panel(title,sub,body,right=''){return `<div class="panel"><div class="panel-head"><div><h2>${title}</h2>${sub?`<div class="hint">${sub}</div>`:''}</div>${right}</div>${body}</div>`}
+const badges = {
+  active:['active','green'],
+  pending:['pending','amber'],
+  suspended:['suspended','red'],
+  issued:['발급됨','green'],
+  not_issued:['미발급','gray']
+};
+
 function esc(value){return String(value==null?'':value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function renderDashboard(){let pending=demoStores.filter(s=>s.status==='pending'), failed=messages.filter(m=>m[5]==='failed'), need=messages.filter(m=>!m[4]&&m[5]==='queued'), overdue=demoStores.filter(s=>['overdue','hold'].includes(s.billingStatus)), trialEnding=demoStores.map(s=>({...s,trialEndsAt:trialEndsAt(s),trialDays:daysUntil(trialEndsAt(s))})).filter(s=>s.billingStatus==='trial'&&s.trialDays>=0&&s.trialDays<=7).sort((a,b)=>a.trialDays-b.trialDays);document.getElementById('dashboard').innerHTML=`<div class="grid kpis">${kpi('전체 점주',metrics.totalStores,'곳')}${kpi('활성 점주',metrics.activeStores,'곳')}${kpi('이번 달 신규',metrics.newStoresThisMonth,'곳')}${kpi('해지·비활성',metrics.churnedStoresThisMonth,'곳')}${kpi('전체 고객',metrics.totalCustomers.toLocaleString(),'명')}${kpi('이번 달 발송',metrics.sentThisMonth.toLocaleString(),'건')}${kpi('발송 성공률',metrics.sendSuccessRate+'%')}${kpi('예상 매출',won(metrics.expectedRevenue),'','accent')}${kpi('알림톡 예상 비용',won(metrics.expectedAlimtalkCost))}</div><div class="grid two">${taskPanel('승인 대기 점주',pending,s=>`${s.storeName}<br><span class="muted">${s.ownerName} · ${s.category}</span>`)}${taskPanel('발송 실패',failed,m=>`${m[0]} · ${m[1]}<br><span class="muted">${m[7]}</span>`)}${taskPanel('미납·결제 확인',overdue,s=>`${s.storeName}<br><span class="muted">${badges[s.billingStatus][0]} · ${s.memo||'확인 필요'}</span>`)}${taskPanel('체험 종료 임박 (7일 이내)',trialEnding,s=>`${s.storeName}<br><span class="muted">${s.ownerName} · 종료일 ${s.trialEndsAt} · 3개월 차 결제 안내 대상</span>`,s=>`<span class="badge amber">${ddayText(s.trialDays)}</span>`)}${taskPanel('AI 메시지 확인 필요',need,m=>`${m[0]} · ${m[1]}<br><span class="muted">${m[3]}</span>`)}</div>`}
-function taskPanel(title,items,render,action){return panel(title,'',items.length?items.map(x=>`<div class="task"><div><div class="task-title">${render(x)}</div></div>${action?action(x):`<button class="btn primary" onclick="toast('처리 화면으로 이동합니다.')">확인</button>`}</div>`).join(''):`<div class="empty"><b>${title} 없음</b>지금 처리할 항목이 없습니다.</div>`,`<span class="badge amber">${items.length}건</span>`)}
-function renderStores(filter='all'){
-  let list=filter==='all'?operatorStores:operatorStores.filter(s=>s.status===filter);
-  document.getElementById('stores').innerHTML=`<div class="tools"><div class="tabs">${[['all','전체'],['pending','승인대기'],['active','활성'],['inactive','비활성'],['blocked','차단'],['churned','해지']].map(t=>`<button class="tab ${filter===t[0]?'on':''}" onclick="renderStores('${t[0]}')">${t[1]}</button>`).join('')}</div><label class="search">검색 <input placeholder="매장명, 점주명"></label></div>${panel('점주 목록','실제 등록된 매장의 PIN 발급 상태를 확인합니다.',table(['매장','매장코드','점주','업종','상태','PIN','액션'],list.map(s=>[`<span class="name">${esc(s.storeName)}</span><div class="muted">${esc(s.phone||'')}</div>`,esc(s.storeId),esc(s.ownerName||'-'),esc(s.category||'-'),badge(s.status),s.pinConfigured?badge('발급됨'):badge('미발급'),`<button class="btn" onclick="openStore('${esc(s.storeId)}')">상세</button>`])))}`;
+function badge(v){let b=badges[v]||[v,'gray'];return `<span class="badge ${b[1]}">${esc(b[0])}</span>`}
+function toast(t){let el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2300)}
+function formatDate(value){if(!value)return '-';let d=new Date(value);if(Number.isNaN(d.getTime()))return '-';return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
+function kpi(label,value,unit='',accent=''){return `<div class="kpi ${accent}"><div class="label">${label}</div><div class="value">${esc(value)}${unit?`<span class="unit">${esc(unit)}</span>`:''}</div></div>`}
+function panel(title,sub,body,right=''){return `<div class="panel"><div class="panel-head"><div><h2>${esc(title)}</h2>${sub?`<div class="hint">${esc(sub)}</div>`:''}</div>${right}</div>${body}</div>`}
+function table(head,rows){return `<div class="table-wrap"><table><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${head.length}"><div class="empty"><b>표시할 데이터가 없습니다</b>실제 데이터가 생기면 이곳에 표시됩니다.</div></td></tr>`}</tbody></table></div>`}
+function renderMenu(){document.getElementById('menu').innerHTML=menus.map(m=>`<li><button data-id="${m[0]}" class="${m[0]==='dashboard'?'on':''}" onclick="switchScreen('${m[0]}')">${m[1]}</button></li>`).join('')}
+function switchScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.menu button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));document.getElementById('pageTitle').textContent=menus.find(m=>m[0]===id)[1];history.replaceState(null,'','/operator'+(id==='dashboard'?'':'#'+id))}
+async function logout(){try{await fetch('/api/operator/logout',{method:'POST',credentials:'same-origin'})}catch(e){} location.replace('/operator/login')}
+
+function renderDashboard(){
+  const pending = operatorStores.filter(s=>s.status==='pending');
+  const suspended = operatorStores.filter(s=>s.status==='suspended');
+  document.getElementById('dashboard').innerHTML =
+    `<div class="grid kpis">
+      ${kpi('전체 매장', operatorMetrics.total_stores, '곳')}
+      ${kpi('active', operatorMetrics.active_stores, '곳')}
+      ${kpi('pending', operatorMetrics.pending_stores, '곳')}
+      ${kpi('suspended', operatorMetrics.suspended_stores, '곳')}
+      ${kpi('전체 고객', Number(operatorMetrics.total_customers||0).toLocaleString('ko-KR'), '명', 'accent')}
+    </div>
+    <div class="grid two">
+      ${taskPanel('pending 매장', pending, s=>`${esc(s.storeName)}<br><span class="muted">${esc(s.ownerName||'-')} · ${esc(s.category||'-')}</span>`)}
+      ${taskPanel('suspended 매장', suspended, s=>`${esc(s.storeName)}<br><span class="muted">${esc(s.ownerName||'-')} · ${Number(s.customerCount||0).toLocaleString('ko-KR')}명</span>`)}
+    </div>`;
 }
-function renderCustomers(filter='all'){let list=filter==='all'?customers:customers.filter(c=>c[5]===filter);document.getElementById('customers').innerHTML=`<div class="tools"><div class="tabs">${[['all','전체'],['new','신규'],['returning','재방문'],['at_risk','이탈위험'],['dormant','휴면']].map(t=>`<button class="tab ${filter===t[0]?'on':''}" onclick="renderCustomers('${t[0]}')">${t[1]}</button>`).join('')}</div><label class="search">검색 <input placeholder="고객명, 매장명"></label></div>${panel('고객 데이터','고객 정보 직접 수정은 다음 단계입니다.',table(['고객','휴대폰','매장','방문','마지막 방문','상태','수정 이력'],list.map(c=>[c[0],c[1],c[2],c[3]+'회',c[4],badge(c[5]),`<button class="btn" onclick="toast('수정 이력은 곧 제공됩니다.')">보기</button>`])))}`}
-function renderMessages(filter='all'){let list=filter==='all'?messages:messages.filter(m=>m[5]===filter||(!m[4]&&filter==='review'));document.getElementById('messages').innerHTML=`<div class="tools"><div class="tabs">${[['all','전체'],['queued','발송 대기'],['review','점주 확인 필요'],['failed','발송 실패'],['blocked','차단됨']].map(t=>`<button class="tab ${filter===t[0]?'on':''}" onclick="renderMessages('${t[0]}')">${t[1]}</button>`).join('')}</div></div>${panel('AI 메시지·발송','실제 발송은 이번 범위에서 제외됩니다.',table(['매장','고객','유형','미리보기','승인','발송','예약시각','상세'],list.map(m=>[m[0],m[1],m[2],m[3],m[4]?'승인':'대기',badge(m[5]),m[6],`<button class="btn" onclick="toast('상세 보기 mock입니다.')">상세</button>`])))}`}
-function renderBilling(){document.getElementById('billing').innerHTML=panel('결제·프로모션','기본 요금제 34,800원, 2개월 무료 후 3개월 차부터 월 34,800원 기준입니다.',table(['매장','요금제','체험','결제 시작','상태','월 발송','프로모션','액션'],demoStores.map(s=>[s.storeName,'기본 · 34,800원',s.billingStatus==='trial'?'체험중':'없음',trialEndsAt(s),badge(billingStatusOf(s)),s.monthlySentCount+'건','2개월 무료',`<button class="btn" onclick="toast('결제 상태 변경 mock입니다.')">상태 변경</button>`])))}
-function renderSettings(){document.getElementById('settings').innerHTML=`<div class="grid settings">${setting('업종별 재방문 주기',['헤어샵 30일','네일샵 21일','피부관리실 28일','애견미용 35일'])}${setting('업종별 메시지 톤',['헤어샵: 친근하고 전문적','네일샵: 밝고 감각적','피부관리: 차분하고 신뢰감','애견미용: 따뜻하고 편안함'])}${setting('기본 발송 시점',['오전 10시','점주 승인 후 발송','월 발송 한도 1,000건'])}${setting('예약 링크 정책',['선택 입력','메시지에 포함 가능','운영관리자 권한은 자리만 표시'])}</div>`}
-function setting(title,items){return `<div class="setting-box"><h3>${title}</h3><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`}
-function table(head,rows){return `<div class="table-wrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${head.length}"><div class="empty"><b>검색 결과 없음</b>필터 조건을 바꿔보세요.</div></td></tr>`}</tbody></table></div>`}
+function taskPanel(title,items,render){
+  return panel(title,'',items.length?items.map(x=>`<div class="task"><div><div class="task-title">${render(x)}</div></div><button class="btn" onclick="openStore('${esc(x.storeId)}')">상세</button></div>`).join(''):`<div class="empty"><b>${esc(title)} 없음</b>현재 처리할 항목이 없습니다.</div>`,`<span class="badge amber">${items.length}건</span>`);
+}
+function renderStores(filter=activeStoreFilter){
+  activeStoreFilter = filter;
+  const keyword = (document.getElementById('storeSearch')?.value || '').trim().toLowerCase();
+  let list = filter==='all' ? operatorStores : operatorStores.filter(s=>s.status===filter);
+  if(keyword) list = list.filter(s=>[s.storeName,s.storeId,s.ownerName,s.category].some(v=>String(v||'').toLowerCase().includes(keyword)));
+  document.getElementById('stores').innerHTML =
+    `<div class="tools"><div class="tabs">${[['all','전체'],['active','active'],['pending','pending'],['suspended','suspended']].map(t=>`<button class="tab ${filter===t[0]?'on':''}" onclick="renderStores('${t[0]}')">${t[1]}</button>`).join('')}</div><label class="search">검색 <input id="storeSearch" placeholder="매장명, 점주명" value="${esc(keyword)}" oninput="renderStores(activeStoreFilter)"></label></div>` +
+    panel('전체 점주 목록','운영자는 전체 매장 데이터를 확인합니다.',table(['매장','store_id','점주','고객 수','매장 상태','점주 상태','PIN','액션'],list.map(s=>[
+      `<span class="name">${esc(s.storeName)}</span><div class="muted">${esc(s.phone||'')}</div>`,
+      esc(s.storeId),
+      `${esc(s.ownerName||'-')}<div class="muted">${esc(s.ownerEmail||'')}</div>`,
+      `${Number(s.customerCount||0).toLocaleString('ko-KR')}명`,
+      badge(s.status),
+      badge(s.ownerStatus),
+      s.pinConfigured?badge('issued'):badge('not_issued'),
+      `<button class="btn" onclick="openStore('${esc(s.storeId)}')">상세</button>`
+    ])));
+}
+function renderCustomers(filter=activeCustomerFilter){
+  activeCustomerFilter = filter;
+  let list = filter==='all' ? operatorStores : operatorStores.filter(s=>s.status===filter);
+  document.getElementById('customers').innerHTML =
+    `<div class="tools"><div class="tabs">${[['all','전체'],['active','active'],['pending','pending'],['suspended','suspended']].map(t=>`<button class="tab ${filter===t[0]?'on':''}" onclick="renderCustomers('${t[0]}')">${t[1]}</button>`).join('')}</div></div>` +
+    panel('매장별 고객 수','개인정보 목록이 아니라 매장별 고객 수만 표시합니다.',table(['매장','store_id','점주','고객 수','상태'],list.map(s=>[
+      `<span class="name">${esc(s.storeName)}</span>`,
+      esc(s.storeId),
+      esc(s.ownerName||'-'),
+      `${Number(s.customerCount||0).toLocaleString('ko-KR')}명`,
+      badge(s.status)
+    ])));
+}
+function renderMessages(){
+  document.getElementById('messages').innerHTML = panel('AI 메시지·발송','실제 발송 로그 연동은 다음 단계입니다.',`<div class="empty"><b>표시할 발송 데이터가 없습니다</b>발송 로그 테이블 연결 후 이곳에 표시됩니다.</div>`);
+}
+function renderBilling(){
+  document.getElementById('billing').innerHTML = panel('결제·프로모션','현재는 매장 상태 기준만 표시합니다.',table(['매장','store_id','상태','고객 수'],operatorStores.map(s=>[
+    esc(s.storeName),
+    esc(s.storeId),
+    badge(s.status),
+    `${Number(s.customerCount||0).toLocaleString('ko-KR')}명`
+  ])));
+}
+function renderSettings(){
+  document.getElementById('settings').innerHTML = `<div class="grid settings">${setting('MVP 운영 기준',['운영자 인증 후 전체 매장 조회','고객 개인정보 목록 미노출','PIN은 발급 직후 1회 표시'])}${setting('상태 기준',['active: 정상 운영','pending: 승인 또는 준비 대기','suspended: 중지·차단·비활성 통합'])}</div>`;
+}
+function setting(title,items){return `<div class="setting-box"><h3>${esc(title)}</h3><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`}
 function openStore(id){
   let s=operatorStores.find(x=>x.storeId===id);
   if(!s){toast('매장 정보를 찾을 수 없습니다.');return}
   let updated=s.pinUpdatedAt?new Date(s.pinUpdatedAt).toLocaleString('ko-KR'):'발급 이력 없음';
   let reasons=`<option value="initial_issue" ${s.pinConfigured?'':'selected'}>최초 PIN 발급</option><option value="reissue" ${s.pinConfigured?'selected':''}>PIN 재발급</option>`;
-  document.getElementById('drawer').innerHTML=`<div class="drawer-head"><div><h2>${esc(s.storeName)}</h2><div class="muted">${esc(s.ownerName||'-')} · ${esc(s.category||'-')}</div></div><button class="close" onclick="closeDrawer()" aria-label="닫기">×</button></div><div class="drawer-body"><div class="formrow"><label>매장코드</label><input value="${esc(s.storeId)}" readonly></div><div class="formrow"><label>PIN 상태</label><input id="pin-status" value="${s.pinConfigured?'발급됨 · '+esc(updated):'미발급'}" readonly></div><div class="formrow"><label for="pin-reason">발급 사유</label><select id="pin-reason">${reasons}</select></div><div class="pin-notice">새 PIN을 발급하면 기존 PIN은 더 이상 사용할 수 없고, 기존 점주 로그인 세션은 만료됩니다.</div><button class="btn primary" id="issue-pin-button" onclick="issuePin('${esc(s.storeId)}')" ${s.status==='active'?'':'disabled'}>PIN 발급/재발급</button><div class="pin-result" id="pin-result"><div class="once">새 PIN은 지금 한 번만 표시됩니다. 별도로 저장되지 않으니 점주에게 안전하게 전달하세요.</div><div class="pin-code"><strong id="issued-pin"></strong><button class="btn" onclick="copyIssuedPin()">복사</button></div></div></div>`;
+  document.getElementById('drawer').innerHTML=`<div class="drawer-head"><div><h2>${esc(s.storeName)}</h2><div class="muted">${esc(s.ownerName||'-')} · ${esc(s.category||'-')}</div></div><button class="close" onclick="closeDrawer()" aria-label="닫기">×</button></div><div class="drawer-body"><div class="formrow"><label>store_id</label><input value="${esc(s.storeId)}" readonly></div><div class="formrow"><label>고객 수</label><input value="${Number(s.customerCount||0).toLocaleString('ko-KR')}명" readonly></div><div class="formrow"><label>매장 상태</label><input value="${esc(s.status)}" readonly></div><div class="formrow"><label>점주 상태</label><input value="${esc(s.ownerStatus)}" readonly></div><div class="formrow"><label>PIN 상태</label><input id="pin-status" value="${s.pinConfigured?'발급됨 · '+esc(updated):'미발급'}" readonly></div><div class="formrow"><label for="pin-reason">발급 사유</label><select id="pin-reason">${reasons}</select></div><div class="pin-notice">새 PIN을 발급하면 기존 PIN은 더 이상 사용할 수 없고, 기존 점주 로그인 세션은 만료됩니다.</div><button class="btn primary" id="issue-pin-button" onclick="issuePin('${esc(s.storeId)}')" ${s.status==='suspended'?'disabled':''}>PIN 발급/재발급</button><div class="pin-result" id="pin-result"><div class="once">새 PIN은 지금 한 번만 표시됩니다. 별도로 저장되지 않으니 점주에게 안전하게 전달하세요.</div><div class="pin-code"><strong id="issued-pin"></strong><button class="btn" onclick="copyIssuedPin()">복사</button></div></div></div>`;
   document.getElementById('drawer').classList.add('open');
 }
 async function issuePin(storeId){
   let store=operatorStores.find(x=>x.storeId===storeId);
   if(!store)return;
-  let action=store.pinConfigured?'재발급':'최초 발급';
-  if(!confirm(`${store.storeName}의 PIN을 ${action}하시겠습니까?`))return;
+  if(!confirm(`${store.storeName}의 PIN을 발급/재발급하시겠습니까?`))return;
   let button=document.getElementById('issue-pin-button');
   let result=document.getElementById('pin-result');
   let pinEl=document.getElementById('issued-pin');
-  result.classList.remove('show');pinEl.textContent='';button.disabled=true;
+  result.classList.remove('show'); pinEl.textContent=''; button.disabled=true;
   try{
     let res=await fetch('/api/operator/pin/issue',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({store_id:storeId,reason:document.getElementById('pin-reason').value})});
     let data=await res.json();
@@ -115,9 +163,9 @@ async function issuePin(storeId){
     if(!res.ok||!data.ok)throw new Error(data.message||'PIN을 발급하지 못했습니다.');
     pinEl.textContent=data.pin;
     result.classList.add('show');
-    store.pinConfigured=true;store.pinUpdatedAt=new Date().toISOString();
+    store.pinConfigured=true; store.pinUpdatedAt=new Date().toISOString();
     document.getElementById('pin-status').value='발급됨 · 방금 전';
-    renderStores();
+    renderStores(activeStoreFilter);
     toast(data.action==='issued'?'PIN을 발급했습니다.':'PIN을 재발급했습니다.');
   }catch(e){toast(e.message||'PIN을 발급하지 못했습니다.')}finally{button.disabled=false}
 }
@@ -126,17 +174,31 @@ async function copyIssuedPin(){
   if(!value)return;
   try{await navigator.clipboard.writeText(value);toast('PIN을 복사했습니다.')}catch(e){toast('PIN을 복사하지 못했습니다.')}
 }
-function closeDrawer(){
-  let pin=document.getElementById('issued-pin');if(pin)pin.textContent='';
-  let drawer=document.getElementById('drawer');drawer.classList.remove('open');drawer.innerHTML='';
-}
+function closeDrawer(){let pin=document.getElementById('issued-pin');if(pin)pin.textContent='';let drawer=document.getElementById('drawer');drawer.classList.remove('open');drawer.innerHTML=''}
 async function loadOperatorStores(){
   let res=await fetch('/api/operator/stores',{credentials:'same-origin'});
   if(res.status===401){location.replace('/operator/login');return false}
   let data=await res.json();
   if(!res.ok||!data.ok)throw new Error(data.message||'매장 목록을 불러오지 못했습니다.');
-  operatorStores=(data.stores||[]).map(s=>({storeId:s.store_id,storeName:s.store_name,ownerName:s.owner_name,phone:s.phone,region:s.address,category:s.industry,status:s.status,pinConfigured:!!s.pin_configured,pinUpdatedAt:s.pin_updated_at}));
-  renderStores();return true;
+  operatorMetrics=data.metrics||operatorMetrics;
+  operatorStores=(data.stores||[]).map(s=>({
+    storeUuid:s.store_uuid,
+    storeId:s.store_id,
+    storeName:s.store_name,
+    ownerName:s.owner_name,
+    ownerEmail:s.owner_email,
+    ownerStatus:s.owner_status,
+    phone:s.phone,
+    region:s.address,
+    category:s.industry,
+    status:s.status,
+    customerCount:Number(s.customer_count||0),
+    createdAt:s.created_at,
+    pinConfigured:!!s.pin_configured,
+    pinUpdatedAt:s.pin_updated_at
+  }));
+  renderDashboard(); renderStores(activeStoreFilter); renderCustomers(activeCustomerFilter); renderMessages(); renderBilling(); renderSettings();
+  return true;
 }
 async function bootOperator(){
   try{
@@ -144,7 +206,7 @@ async function bootOperator(){
     if(!res.ok){location.replace('/operator/login');return}
     let data=await res.json();
     document.getElementById('operatorName').textContent=(data.operator_email||'운영자').split('@')[0];
-    renderMenu();renderDashboard();renderCustomers();renderMessages();renderBilling();renderSettings();
+    renderMenu();
     await loadOperatorStores();
     if(location.hash){let id=location.hash.slice(1);if(menus.some(m=>m[0]===id))switchScreen(id)}
   }catch(e){toast(e.message||'운영자 정보를 불러오지 못했습니다.')}
