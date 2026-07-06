@@ -81,9 +81,8 @@
   /* hero */
   .hero{padding:84px 0 88px;background:#fff}
   .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#F0F0F2;color:var(--ink);
     font-weight:700;font-size:.86rem;padding:8px 14px;border-radius:999px;margin-bottom:22px}
-  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--kakao)}
   .hero h1{font-size:3rem;line-height:1.22;font-weight:800;letter-spacing:-.03em;color:var(--ink);margin-bottom:20px}
   .hero h1 .hl{position:relative;white-space:nowrap}
   .hero h1 .hl::after{content:"";position:absolute;left:-2px;right:-2px;bottom:4px;height:14px;
@@ -114,13 +113,13 @@
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
 
   /* product card */
-  .device{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
-  .device-top{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--tint)}
-  .device-top .d{width:11px;height:11px;border-radius:50%;background:#D9D9D9}
-  .device-top .ttl{margin-left:8px;font-size:.84rem;color:var(--ink-soft);font-weight:700}
-  .device-body{padding:20px}
+  .device{background:#fff;border:1px solid #D8DCE5;border-radius:var(--radius-lg);
+    box-shadow:0 30px 72px rgba(25,25,25,.20), 0 4px 14px rgba(25,25,25,.08);overflow:hidden}
+  .device-top{display:flex;align-items:center;gap:8px;padding:16px 18px;border-bottom:1px solid #2A2A2A;background:var(--ink)}
+  .device-top .ttl{margin-left:2px;font-size:.92rem;color:#fff;font-weight:800;line-height:1;transform:translateY(2px)}
+  .device-body{padding:20px;background:#F5F6F9}
   .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-  .stat{background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:13px 12px;text-align:left}
+  .stat{background:#fff;border:1px solid #E4E7EE;border-radius:12px;padding:13px 12px;text-align:left;box-shadow:0 1px 2px rgba(25,25,25,.04)}
   .stat-label{display:block;font-size:.76rem;color:var(--muted);font-weight:600;margin-bottom:5px}
   .stat-num{font-size:1.5rem;font-weight:800;color:var(--ink);letter-spacing:-.02em;line-height:1}
   .stat-num.accent{color:#D9920A}
@@ -136,9 +135,10 @@
   .who .sub{font-size:.8rem;color:var(--muted)}
   .pill{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px}
   .pill.due{background:var(--ink);color:#fff}
-  .pill.soon{background:var(--y-tint-2);color:var(--brown)}
+  .pill.soon{background:#FFF1E0;color:#EA580C}
   .pill.ok{background:#EEF6EE;color:#3F8E45}
-  .ai-card{margin-top:14px;border:1px solid var(--line);background:var(--tint);border-radius:14px;padding:16px}
+  .ai-card{margin-top:14px;border:1.5px solid var(--kakao);background:#FFFBE6;border-radius:14px;padding:16px;
+    box-shadow:0 8px 20px rgba(254,229,0,.22)}
   .ai-card .tag{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--ink);margin-bottom:9px}
   .ai-card .tag .ai{background:var(--ink);color:var(--kakao);border-radius:6px;padding:2px 7px;font-size:.72rem}
   .ai-card .msg{font-size:.92rem;color:var(--ink-soft);line-height:1.55}
@@ -330,11 +330,11 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow"><span class="dot"></span>매장 단골관리 AI</span>
+      <span class="eyebrow">매장 단골관리 AI</span>
       <h1>한 번 온 고객을<br>다시 오게 만드는 <span class="hl">가장 쉬운 방법</span></h1>
       <p class="lead">AI가 고객의 재방문 타이밍을 기억하고 메시지를 미리 준비합니다. 점주는 확인하고 보내기만 하면 됩니다.</p>
       <div class="hero-cta">
-        <a href="./start" class="btn btn-primary btn-lg">단골관리 시작하기</a>
+        <a href="#apply" class="btn btn-primary btn-lg">단골관리 시작하기</a>
       </div>
       <div class="social-proof">
         <div class="faces">
@@ -351,18 +351,17 @@
       <div class="hero-note">
         <span class="hn-label">추천매장</span>
         <span class="store-chips">
+          <span class="chip">치과</span>
           <span class="chip">헤어샵</span>
-          <span class="chip">네일샵</span>
-          <span class="chip">피부관리실</span>
-          <span class="chip">애견미용</span>
+          <span class="chip">뷰티샵</span>
+          <span class="chip">애견미용실</span>
         </span>
       </div>
     </div>
 
     <div class="device" aria-label="단골만들기 서비스 화면 예시">
       <div class="device-top">
-        <span class="d"></span><span class="d"></span><span class="d"></span>
-        <span class="ttl">단골만들기 · 재방문 관리</span>
+        <span class="ttl">재방문 추천고객</span>
       </div>
       <div class="device-body">
         <div class="stat-row">
