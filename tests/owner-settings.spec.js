@@ -82,7 +82,7 @@ test.describe('owner settings security and persistence', () => {
       calls.push(String(url));
       if (String(url).includes('/rpc/owner_session_dashboard')) return jsonResponse(sessionSnapshot());
       if (String(url).includes('/rest/v1/settings?')) {
-        return jsonResponse([{ store_id: STORE_UUID, reservation_url: 'https://booking.example.com', revisit_cycle_days: 21, default_message: '다시 방문 안내드립니다.' }]);
+        return jsonResponse([{ store_id: STORE_UUID, reservation_url: 'https://booking.example.com', revisit_cycle_days: 21 }]);
       }
       return jsonResponse([], 404);
     };
@@ -99,26 +99,6 @@ test.describe('owner settings security and persistence', () => {
     });
     expect(body.settings.revisit_cycle_days).toBe(21);
     expect(calls.find((url) => url.includes('/rest/v1/settings?'))).toContain(`store_id=eq.${STORE_UUID}`);
-  });
-
-  test('settings GET hides Revaro test fallback message from owners', async () => {
-    global.fetch = async (url) => {
-      if (String(url).includes('/rpc/owner_session_dashboard')) return jsonResponse(sessionSnapshot());
-      if (String(url).includes('/rest/v1/settings?')) {
-        return jsonResponse([{
-          store_id: STORE_UUID,
-          reservation_url: '',
-          revisit_cycle_days: 30,
-          default_message: 'Revaro default message 202606251550'
-        }]);
-      }
-      return jsonResponse([], 404);
-    };
-
-    const res = createResponse();
-    await settingsHandler(request('GET'), res);
-    expect(res.statusCode).toBe(200);
-    expect(JSON.parse(res.body).settings.default_message).toBe('방문 주기에 맞춰 다시 안내드릴게요.');
   });
 
   test('settings PATCH only upserts editable operation fields', async () => {
@@ -141,8 +121,7 @@ test.describe('owner settings security and persistence', () => {
       address: '바뀌면 안 되는 주소',
       store_id: 'other01',
       reservation_url: 'https://booking.example.com/path',
-      revisit_cycle_days: 45,
-      default_message: '방문 시기에 맞춰 안내드릴게요.'
+      revisit_cycle_days: 45
     }), res);
 
     expect(res.statusCode).toBe(200);
@@ -153,8 +132,7 @@ test.describe('owner settings security and persistence', () => {
     expect(body).toEqual(expect.objectContaining({
       store_id: STORE_UUID,
       reservation_url: 'https://booking.example.com/path',
-      revisit_cycle_days: 45,
-      default_message: '방문 시기에 맞춰 안내드릴게요.'
+      revisit_cycle_days: 45
     }));
     expect(body.name).toBeUndefined();
     expect(body.phone).toBeUndefined();
@@ -167,7 +145,7 @@ test.describe('owner settings security and persistence', () => {
       calls.push(String(url));
       if (String(url).includes('/rpc/owner_session_dashboard')) return jsonResponse(sessionSnapshot());
       if (String(url).includes('/rest/v1/settings?')) {
-        return jsonResponse([{ reservation_url: '', revisit_cycle_days: 14, default_message: '기본 문구' }]);
+        return jsonResponse([{ reservation_url: '', revisit_cycle_days: 14 }]);
       }
       if (String(url).includes('/rest/v1/customers?')) {
         return jsonResponse([

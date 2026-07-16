@@ -74,7 +74,7 @@ test.describe('owner dashboard real data', () => {
         }]);
       }
       if (String(url).includes('/rest/v1/settings?')) {
-        return jsonResponse([{ reservation_url: '', revisit_cycle_days: 30, default_message: '기본 문구' }]);
+        return jsonResponse([{ reservation_url: '', revisit_cycle_days: 30 }]);
       }
       if (String(url).includes('/rest/v1/visits?')) {
         return jsonResponse([

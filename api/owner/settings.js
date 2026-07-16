@@ -11,19 +11,8 @@ const {
 } = require('../../server/owner-security');
 
 const DEFAULT_REVISIT_DAYS = 30;
-const DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
-
 function cleanText(value, maxLength) {
   return String(value || '').trim().slice(0, maxLength);
-}
-
-const OWNER_DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
-
-function normalizeDefaultMessage(value) {
-  const text = cleanText(value, 500);
-  if (!text) return OWNER_DEFAULT_MESSAGE;
-  if (/^Revaro default message/i.test(text)) return OWNER_DEFAULT_MESSAGE;
-  return text;
 }
 
 function cleanUrl(value) {
@@ -63,8 +52,7 @@ async function ownerStore(req, res) {
 function publicSettings(row) {
   return {
     reservation_url: row && row.reservation_url ? row.reservation_url : '',
-    revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : DEFAULT_REVISIT_DAYS),
-    default_message: normalizeDefaultMessage(row && row.default_message)
+    revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : DEFAULT_REVISIT_DAYS)
   };
 }
 
@@ -90,7 +78,7 @@ module.exports = async function handler(req, res) {
     const storeFilter = encodeURIComponent(store.id);
     const rows = await serviceSelect(
       'settings',
-      `select=store_id,reservation_url,revisit_cycle_days,default_message&store_id=eq.${storeFilter}&limit=1`
+      `select=store_id,reservation_url,revisit_cycle_days&store_id=eq.${storeFilter}&limit=1`
     );
 
     if (req.method === 'GET') {
@@ -107,7 +95,6 @@ module.exports = async function handler(req, res) {
     const revisitCycleDays = Number.isFinite(rawDays)
       ? Math.min(180, Math.max(7, rawDays))
       : DEFAULT_REVISIT_DAYS;
-    const defaultMessage = normalizeDefaultMessage(body.default_message);
 
     const updated = await serviceUpsert(
       'settings',
@@ -116,7 +103,6 @@ module.exports = async function handler(req, res) {
         store_id: store.id,
         reservation_url: reservationUrl,
         revisit_cycle_days: revisitCycleDays,
-        default_message: defaultMessage,
         updated_at: new Date().toISOString()
       }
     );

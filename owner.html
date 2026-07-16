@@ -794,7 +794,6 @@
           <input class="input" id="set-revisit-days" type="number" min="7" max="180" step="1" placeholder="30">
           <p class="field-help">방문 기록이 부족한 고객에게 우선 적용됩니다. 이후 고객별 방문 데이터에 따라 자동 조정됩니다.</p>
         </div>
-        <div class="field"><label>기본 메시지 문구</label><textarea class="input" id="set-guide" placeholder="방문 주기에 맞춰 다시 안내드릴게요."></textarea></div>
         <button class="btn btn-primary btn-lg" style="width:100%" onclick="saveStore()">매장 설정 저장</button>
       </div>
     </div>
@@ -1424,17 +1423,6 @@
 
   /* ---------- 예약 링크 / 매장 설정 ---------- */
   var bookingLink = '';
-  var defaultMessageTemplate = '방문 주기에 맞춰 다시 안내드릴게요.';
-
-  var OWNER_DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
-  defaultMessageTemplate = OWNER_DEFAULT_MESSAGE;
-
-  function normalizeDefaultMessage(value){
-    var text = String(value || '').trim();
-    if(!text) return OWNER_DEFAULT_MESSAGE;
-    if(/^Revaro default message/i.test(text)) return OWNER_DEFAULT_MESSAGE;
-    return text;
-  }
 
   function renderBooking(){
     var has = !!bookingLink;
@@ -1449,13 +1437,6 @@
       if(line){ line.style.display = (has && chk && chk.checked) ? 'flex' : 'none'; }
     });
   }
-  function renderDefaultMessageTemplate(){
-    document.querySelectorAll('.qmsg .qbody').forEach(function(body){
-      if(defaultMessageTemplate){
-        body.textContent = defaultMessageTemplate;
-      }
-    });
-  }
   function renderStoreSettings(store, settings){
     setText('set-name', store.name || '-');
     setText('set-tel', store.phone || '-');
@@ -1463,15 +1444,10 @@
     setText('set-store-id', store.store_id || store.store_code || '-');
     var link = document.getElementById('set-link');
     var days = document.getElementById('set-revisit-days');
-    var guide = document.getElementById('set-guide');
     bookingLink = settings.reservation_url || '';
-    defaultMessageTemplate = settings.default_message || '방문 주기에 맞춰 다시 안내드릴게요.';
-    defaultMessageTemplate = normalizeDefaultMessage(defaultMessageTemplate);
     if(link) link.value = bookingLink;
     if(days) days.value = settings.revisit_cycle_days || 30;
-    if(guide) guide.value = defaultMessageTemplate;
     renderBooking();
-    renderDefaultMessageTemplate();
   }
   function toggleBooking(chk){
     var card = chk.closest('.qmsg');
@@ -1481,11 +1457,9 @@
   async function saveStore(){
     var link = document.getElementById('set-link');
     var days = document.getElementById('set-revisit-days');
-    var guide = document.getElementById('set-guide');
     var payload = {
       reservation_url: link ? link.value.trim() : '',
-      revisit_cycle_days: days ? days.value : '',
-      default_message: guide ? guide.value.trim() : ''
+      revisit_cycle_days: days ? days.value : ''
     };
     try{
       var res = await fetch('/api/owner/settings', {
