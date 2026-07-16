@@ -70,7 +70,8 @@ module.exports = async function handler(req, res) {
       operator_email: result.operator_email,
       expires_at: result.expires_at
     });
-  } catch (_) {
+  } catch (error) {
+    console.error('operator login failed', error && error.message ? error.message : 'unknown error');
     return sendJson(res, 500, { ok: false, message: '로그인을 처리하지 못했습니다.' });
   }
 };
