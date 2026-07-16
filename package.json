@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "operator:credentials": "node scripts/set-operator-credentials.js",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed"
   },
