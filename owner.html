@@ -547,7 +547,7 @@
       <div class="side-store" id="ownerStoreNameSide">불러오는 중</div>
     </div>
     <ul class="menu">
-      <li><button class="on"><span class="mi">▣</span>대시보드</button></li>
+      <li><button class="on" onclick="scrollTo2('dashboardTop')"><span class="mi">▣</span>대시보드</button></li>
       <li><button onclick="scrollTo2('customerListPanel')"><span class="mi">♙</span>고객 목록</button></li>
       <li><button onclick="scrollTo2('visitPanel')"><span class="mi">☺</span>재방문 관리</button></li>
       <li><button onclick="scrollTo2('queuePanel')"><span class="mi">💬</span>오늘 보낼 메시지</button></li>
@@ -560,7 +560,7 @@
   </aside>
 
   <main class="main">
-    <div class="topbar">
+    <div class="topbar" id="dashboardTop">
       <div class="tt">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="menu-btn" onclick="toggleSide(true)" aria-label="메뉴 열기">☰</button>
