@@ -17,6 +17,15 @@ function cleanText(value, maxLength) {
   return String(value || '').trim().slice(0, maxLength);
 }
 
+const OWNER_DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
+
+function normalizeDefaultMessage(value) {
+  const text = cleanText(value, 500);
+  if (!text) return OWNER_DEFAULT_MESSAGE;
+  if (/^Revaro default message/i.test(text)) return OWNER_DEFAULT_MESSAGE;
+  return text;
+}
+
 function cleanUrl(value) {
   const url = cleanText(value, 500);
   if (!url) return '';
@@ -55,7 +64,7 @@ function publicSettings(row) {
   return {
     reservation_url: row && row.reservation_url ? row.reservation_url : '',
     revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : DEFAULT_REVISIT_DAYS),
-    default_message: row && row.default_message ? row.default_message : DEFAULT_MESSAGE
+    default_message: normalizeDefaultMessage(row && row.default_message)
   };
 }
 
@@ -98,7 +107,7 @@ module.exports = async function handler(req, res) {
     const revisitCycleDays = Number.isFinite(rawDays)
       ? Math.min(180, Math.max(7, rawDays))
       : DEFAULT_REVISIT_DAYS;
-    const defaultMessage = cleanText(body.default_message, 500) || DEFAULT_MESSAGE;
+    const defaultMessage = normalizeDefaultMessage(body.default_message);
 
     const updated = await serviceUpsert(
       'settings',

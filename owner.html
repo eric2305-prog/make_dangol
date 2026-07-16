@@ -1426,6 +1426,16 @@
   var bookingLink = '';
   var defaultMessageTemplate = '방문 주기에 맞춰 다시 안내드릴게요.';
 
+  var OWNER_DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
+  defaultMessageTemplate = OWNER_DEFAULT_MESSAGE;
+
+  function normalizeDefaultMessage(value){
+    var text = String(value || '').trim();
+    if(!text) return OWNER_DEFAULT_MESSAGE;
+    if(/^Revaro default message/i.test(text)) return OWNER_DEFAULT_MESSAGE;
+    return text;
+  }
+
   function renderBooking(){
     var has = !!bookingLink;
     document.querySelectorAll('.qmsg').forEach(function(card){
@@ -1456,6 +1466,7 @@
     var guide = document.getElementById('set-guide');
     bookingLink = settings.reservation_url || '';
     defaultMessageTemplate = settings.default_message || '방문 주기에 맞춰 다시 안내드릴게요.';
+    defaultMessageTemplate = normalizeDefaultMessage(defaultMessageTemplate);
     if(link) link.value = bookingLink;
     if(days) days.value = settings.revisit_cycle_days || 30;
     if(guide) guide.value = defaultMessageTemplate;

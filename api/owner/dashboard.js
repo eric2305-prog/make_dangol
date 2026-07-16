@@ -10,6 +10,14 @@ const {
 
 const DEFAULT_REVISIT_DAYS = 30;
 const SOON_DAYS = 7;
+const DEFAULT_MESSAGE = '방문 주기에 맞춰 다시 안내드릴게요.';
+
+function normalizeDefaultMessage(value) {
+  const text = String(value || '').trim();
+  if (!text) return DEFAULT_MESSAGE;
+  if (/^Revaro default message/i.test(text)) return DEFAULT_MESSAGE;
+  return text;
+}
 
 function maskPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
@@ -18,11 +26,19 @@ function maskPhone(phone) {
   return '****';
 }
 
-function defaultSettings(row) {
+function legacyDefaultSettings(row) {
   return {
     reservation_url: row && row.reservation_url ? row.reservation_url : '',
     revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : DEFAULT_REVISIT_DAYS),
     default_message: row && row.default_message ? row.default_message : '방문 주기에 맞춰 다시 안내드릴게요.'
+  };
+}
+
+function defaultSettings(row) {
+  return {
+    reservation_url: row && row.reservation_url ? row.reservation_url : '',
+    revisit_cycle_days: Number(row && row.revisit_cycle_days ? row.revisit_cycle_days : DEFAULT_REVISIT_DAYS),
+    default_message: normalizeDefaultMessage(row && row.default_message)
   };
 }
 
