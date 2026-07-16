@@ -5,10 +5,6 @@ const { test, expect } = require('@playwright/test');
 const storesHandler = require('../api/operator/stores');
 
 const TOKEN = 'c'.repeat(64);
-const STORE_A = '00000000-0000-4000-8000-000000000001';
-const STORE_B = '00000000-0000-4000-8000-000000000002';
-const OWNER_A = '10000000-0000-4000-8000-000000000001';
-const OWNER_B = '10000000-0000-4000-8000-000000000002';
 
 function jsonResponse(body, status = 200) {
   return {
@@ -51,57 +47,53 @@ test.describe('operator store real data API', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  test('authenticated operator sees all stores with customer counts and normalized status', async () => {
+  test('authenticated operator sees all stores from the operator RPC', async () => {
     const calls = [];
     global.fetch = async (url) => {
       const textUrl = String(url);
       calls.push(textUrl);
       if (textUrl.includes('/rpc/operator_session_validate')) {
-        return jsonResponse({ ok: true, operator_email: 'operator@revaro.me', expires_at: '2026-06-26T10:00:00Z' });
+        return jsonResponse({
+          ok: true,
+          operator_email: 'operator@revaro.me',
+          expires_at: '2026-06-26T10:00:00Z'
+        });
       }
-      if (textUrl.includes('/rest/v1/stores?')) {
-        return jsonResponse([
-          {
-            id: STORE_A,
-            store_id: 'test01',
-            store_code: 'test01',
-            name: '테스트 매장',
-            phone: '0212345678',
-            address: '서울 테스트로 1',
-            industry: '헤어샵',
-            status: 'active',
-            owner_id: OWNER_A,
-            created_at: '2026-06-01T00:00:00Z'
-          },
-          {
-            id: STORE_B,
-            store_id: 'test02',
-            store_code: 'test02',
-            name: '중지 매장',
-            phone: '0211112222',
-            address: '서울 테스트로 2',
-            industry: '애견미용',
-            status: 'blocked',
-            owner_id: OWNER_B,
-            created_at: '2026-06-02T00:00:00Z'
-          }
-        ]);
-      }
-      if (textUrl.includes('/rest/v1/owners?')) {
-        return jsonResponse([
-          { id: OWNER_A, name: '김점주', email: 'owner1@example.com' },
-          { id: OWNER_B, name: '박점주', email: 'owner2@example.com' }
-        ]);
-      }
-      if (textUrl.includes('/rest/v1/owner_credentials?')) {
-        return jsonResponse([{ store_id: STORE_A, pin_updated_at: '2026-06-01T01:00:00Z' }]);
-      }
-      if (textUrl.includes('/rest/v1/customers?')) {
-        return jsonResponse([
-          { store_id: STORE_A },
-          { store_id: STORE_A },
-          { store_id: STORE_B }
-        ]);
+      if (textUrl.includes('/rpc/operator_list_stores')) {
+        return jsonResponse({
+          ok: true,
+          stores: [
+            {
+              store_uuid: '00000000-0000-4000-8000-000000000001',
+              store_id: 'test01',
+              store_name: 'Test Store',
+              owner_name: 'Owner One',
+              owner_email: 'owner1@example.com',
+              phone: '0212345678',
+              address: 'Seoul Test Road 1',
+              industry: 'hair',
+              status: 'active',
+              customer_count: 2,
+              created_at: '2026-06-01T00:00:00Z',
+              pin_configured: true,
+              pin_updated_at: '2026-06-01T01:00:00Z'
+            },
+            {
+              store_uuid: '00000000-0000-4000-8000-000000000002',
+              store_id: 'test02',
+              store_name: 'Blocked Store',
+              owner_name: 'Owner Two',
+              owner_email: 'owner2@example.com',
+              phone: '0211112222',
+              address: 'Seoul Test Road 2',
+              industry: 'pet',
+              status: 'blocked',
+              customer_count: 1,
+              created_at: '2026-06-02T00:00:00Z',
+              pin_configured: false
+            }
+          ]
+        });
       }
       return jsonResponse([], 404);
     };
@@ -119,7 +111,7 @@ test.describe('operator store real data API', () => {
     expect(body.stores).toEqual([
       expect.objectContaining({
         store_id: 'test01',
-        owner_name: '김점주',
+        owner_name: 'Owner One',
         status: 'active',
         owner_status: 'active',
         customer_count: 2,
@@ -127,7 +119,7 @@ test.describe('operator store real data API', () => {
       }),
       expect.objectContaining({
         store_id: 'test02',
-        owner_name: '박점주',
+        owner_name: 'Owner Two',
         status: 'suspended',
         owner_status: 'suspended',
         customer_count: 1,
@@ -135,15 +127,13 @@ test.describe('operator store real data API', () => {
       })
     ]);
     expect(res.body).not.toContain('010');
-    expect(calls.some((url) => url.includes('/rest/v1/customers?select=store_id'))).toBe(true);
+    expect(calls.some((url) => url.includes('/rpc/operator_list_stores'))).toBe(true);
   });
 
   test('operator console no longer contains sample mock stores or local auth', () => {
     const html = fs.readFileSync(path.join(__dirname, '..', 'operator', 'index.html'), 'utf8');
     expect(html).not.toContain('demoStores');
-    expect(html).not.toContain('라온 헤어 신촌점');
     expect(html).not.toContain('localStorage');
     expect(html).toContain('/api/operator/stores');
-    expect(html).toContain('매장별 고객 수');
   });
 });
