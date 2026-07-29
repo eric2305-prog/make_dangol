@@ -88,7 +88,7 @@ test.describe('AI customer message generation', () => {
       }
     };
     openAiBody = {
-      output_text: '민지님, 지난 방문 이후 시간이 조금 지났어요.\n편하신 시간에 다시 관리 받아보셔도 좋을 시기라 안내드려요.\n예약은 https://booking.example 에서 확인하실 수 있습니다.',
+      output_text: '민지님, 지난 방문 이후 시간이 조금 지났어요.\n편하신 시간에 다시 관리 받아보셔도 좋을 시기라 안내드려요.\n예약은 https://booking.example 에서 확인하실 수 있어요.',
       model: 'test-openai-model'
     };
     process.env.SUPABASE_URL = 'https://example.supabase.co';
@@ -162,12 +162,17 @@ test.describe('AI customer message generation', () => {
 
   test('builds a clean Korean prompt and rejects broken customer names', () => {
     const prompt = buildPrompt({
-      store: { name: '테스트헤어', booking_url: 'https://booking.example' },
+      store: { name: '테스트헤어', booking_url: 'https://booking.example', industry: '피부관리' },
       customer: { name: '민지', last_visit_at: '2026-06-01T01:00:00Z', visit_count: 3 },
       settings: { revisit_cycle_days: 30, reservation_url: 'https://booking.example' }
     });
     expect(prompt).toContain('고객 이름: 민지님');
     expect(prompt).toContain('매장명: 테스트헤어');
+    expect(prompt).toContain('업종: 피부관리');
+    expect(prompt).toContain('"~이에요", "~해요", "~드려요", "~주세요", "~좋아요"');
+    expect(prompt).toContain('"입니다", "합니다", "시기입니다", "진행해 주세요"처럼 딱딱한 안내문 말투는 피함');
+    expect(prompt).toContain('지금 예약하세요, 혜택, 이벤트, 마감 임박, 특별 할인');
+    expect(prompt).toContain('민감하거나 관리 주기가 있는 업종은 더 조심스럽고 부담 없는 표현 사용');
     expect(prompt).not.toMatch(/\?\?|�/);
     expect(() => buildPrompt({
       store: { name: '테스트헤어' },
@@ -185,6 +190,8 @@ test.describe('AI customer message generation', () => {
     expect(openAiRequests).toHaveLength(1);
     expect(JSON.stringify(openAiRequests[0])).not.toContain('01012345678');
     expect(openAiRequests[0].input).toContain('고객 이름: 민지님');
+    expect(openAiRequests[0].input).toContain('2~3문장, 180자 이내');
+    expect(openAiRequests[0].input).toContain('예약 링크가 있으면 마지막 문장에 자연스럽게 안내');
     expect(openAiRequests[0].model).toBe('gpt-4.1-mini');
     expect(insertedMessages).toEqual([expect.objectContaining({
       store_id: STORE_ID,
@@ -196,6 +203,7 @@ test.describe('AI customer message generation', () => {
       ai_model: 'test-openai-model'
     })]);
     expect(insertedMessages[0].body).not.toMatch(/Revaro default message|test message|fallback message|dummy message|sample message|lorem ipsum|\?\?|�/i);
+    expect(insertedMessages[0].body).toContain('확인하실 수 있어요');
     expect(res.body).not.toContain('sk-test-secret-value');
   });
 
