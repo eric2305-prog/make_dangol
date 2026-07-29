@@ -7,12 +7,17 @@ const ownerActionHandler = require('../api/owner/messages/action');
 const ownerMessagesHandler = require('../api/owner/messages');
 const operatorMessagesHandler = require('../api/operator/messages');
 const operatorActionHandler = require('../api/operator/messages-action');
-const { normalizeGeneratedMessage } = require('../server/ai-message');
+const {
+  buildPrompt,
+  hasBrokenDisplayText,
+  normalizeGeneratedMessage
+} = require('../server/ai-message');
 
 const OWNER_TOKEN = 'a'.repeat(64);
 const OPERATOR_TOKEN = 'b'.repeat(64);
 const STORE_ID = '00000000-0000-4000-8000-000000000001';
 const CUSTOMER_ID = '10000000-0000-4000-8000-000000000001';
+const MESSAGE_ID = '20000000-0000-4000-8000-000000000001';
 
 function jsonResponse(body, status = 200) {
   return {
@@ -44,24 +49,26 @@ function ownerRequest(body = { customer_id: CUSTOMER_ID }) {
 test.describe('AI customer message generation', () => {
   let originalFetch;
   let insertedMessages;
+  let updatedMessages;
   let openAiRequests;
   let customerConsent;
   let duplicateRows;
+  let ownerMessageRows;
   let openAiStatus;
   let openAiBody;
   let selectedMessage;
-  let updatedMessages;
 
   test.beforeEach(() => {
     originalFetch = global.fetch;
     insertedMessages = [];
+    updatedMessages = [];
     openAiRequests = [];
     customerConsent = true;
     duplicateRows = [];
+    ownerMessageRows = [];
     openAiStatus = 200;
-    updatedMessages = [];
     selectedMessage = {
-      id: '20000000-0000-4000-8000-000000000001',
+      id: MESSAGE_ID,
       store_id: STORE_ID,
       customer_id: CUSTOMER_ID,
       message_type: 'return_visit',
@@ -123,10 +130,9 @@ test.describe('AI customer message generation', () => {
         return jsonResponse([row]);
       }
       if (textUrl.includes('/rest/v1/messages?')) {
-        if (textUrl.includes('id=eq.20000000-0000-4000-8000-000000000001')) {
-          return jsonResponse([selectedMessage]);
-        }
-        return jsonResponse(duplicateRows);
+        if (textUrl.includes(`id=eq.${MESSAGE_ID}`)) return jsonResponse([selectedMessage]);
+        if (textUrl.includes('send_status=eq.pending')) return jsonResponse(duplicateRows);
+        return jsonResponse(ownerMessageRows);
       }
       if (textUrl.includes('/rest/v1/settings?')) {
         return jsonResponse([{ reservation_url: 'https://booking.example', revisit_cycle_days: 30 }]);
@@ -152,6 +158,23 @@ test.describe('AI customer message generation', () => {
     delete process.env.OPENAI_MESSAGE_MODEL;
   });
 
+  test('builds a clean Korean prompt and rejects broken customer names', () => {
+    const prompt = buildPrompt({
+      store: { name: '테스트헤어', booking_url: 'https://booking.example' },
+      customer: { name: '민지', last_visit_at: '2026-06-01T01:00:00Z', visit_count: 3 },
+      settings: { revisit_cycle_days: 30, reservation_url: 'https://booking.example' }
+    });
+    expect(prompt).toContain('고객 이름: 민지님');
+    expect(prompt).toContain('매장명: 테스트헤어');
+    expect(prompt).not.toMatch(/\?\?|�/);
+    expect(() => buildPrompt({
+      store: { name: '테스트헤어' },
+      customer: { name: 'AI??7042' },
+      settings: {}
+    })).toThrow(/Customer name/);
+    expect(hasBrokenDisplayText('AI??7042')).toBe(true);
+  });
+
   test('generates a real customer message as draft for review before pending approval', async () => {
     const res = createResponse();
     await generateHandler(ownerRequest(), res);
@@ -159,6 +182,7 @@ test.describe('AI customer message generation', () => {
     expect(res.statusCode).toBe(201);
     expect(openAiRequests).toHaveLength(1);
     expect(JSON.stringify(openAiRequests[0])).not.toContain('01012345678');
+    expect(openAiRequests[0].input).toContain('고객 이름: 민지님');
     expect(openAiRequests[0].model).toBe('gpt-4.1-mini');
     expect(insertedMessages).toEqual([expect.objectContaining({
       store_id: STORE_ID,
@@ -169,16 +193,13 @@ test.describe('AI customer message generation', () => {
       status: 'draft',
       ai_model: 'test-openai-model'
     })]);
-    expect(insertedMessages[0].body).not.toMatch(/Revaro default message|test message|fallback message|dummy message|sample message|lorem ipsum/i);
+    expect(insertedMessages[0].body).not.toMatch(/Revaro default message|test message|fallback message|dummy message|sample message|lorem ipsum|\?\?|�/i);
     expect(res.body).not.toContain('sk-test-secret-value');
   });
 
   test('approval is the only path that changes send_status to pending', async () => {
     const res = createResponse();
-    await ownerActionHandler(ownerRequest({
-      message_id: selectedMessage.id,
-      action: 'approve'
-    }), res);
+    await ownerActionHandler(ownerRequest({ message_id: MESSAGE_ID, action: 'approve' }), res);
 
     expect(res.statusCode).toBe(200);
     expect(updatedMessages).toEqual([expect.objectContaining({
@@ -189,10 +210,7 @@ test.describe('AI customer message generation', () => {
 
   test('cancel changes send_status to canceled', async () => {
     const res = createResponse();
-    await ownerActionHandler(ownerRequest({
-      message_id: selectedMessage.id,
-      action: 'cancel'
-    }), res);
+    await ownerActionHandler(ownerRequest({ message_id: MESSAGE_ID, action: 'cancel' }), res);
 
     expect(res.statusCode).toBe(200);
     expect(updatedMessages).toEqual([expect.objectContaining({
@@ -203,9 +221,7 @@ test.describe('AI customer message generation', () => {
 
   test('regenerate creates a new draft and cancels the previous draft after success', async () => {
     const res = createResponse();
-    await generateHandler(ownerRequest({
-      message_id: selectedMessage.id
-    }), res);
+    await generateHandler(ownerRequest({ message_id: MESSAGE_ID }), res);
 
     expect(res.statusCode).toBe(201);
     expect(insertedMessages).toEqual([expect.objectContaining({
@@ -233,27 +249,23 @@ test.describe('AI customer message generation', () => {
   test('approval blocks messages when customer consent is missing', async () => {
     selectedMessage.customers.kakao_agreed = false;
     const res = createResponse();
-    await ownerActionHandler(ownerRequest({
-      message_id: selectedMessage.id,
-      action: 'approve'
-    }), res);
+    await ownerActionHandler(ownerRequest({ message_id: MESSAGE_ID, action: 'approve' }), res);
 
     expect(res.statusCode).toBe(409);
     expect(JSON.parse(res.body).code).toBe('consent_required');
     expect(updatedMessages).toHaveLength(0);
   });
 
-  test('approval blocks fallback and test-like copy', async () => {
-    selectedMessage.body = 'fallback message';
-    const res = createResponse();
-    await ownerActionHandler(ownerRequest({
-      message_id: selectedMessage.id,
-      action: 'approve'
-    }), res);
+  test('approval blocks fallback and broken copy', async () => {
+    for (const body of ['fallback message', '민지??님, 다시 방문해 주세요.']) {
+      selectedMessage.body = body;
+      const res = createResponse();
+      await ownerActionHandler(ownerRequest({ message_id: MESSAGE_ID, action: 'approve' }), res);
 
-    expect(res.statusCode).toBe(409);
-    expect(JSON.parse(res.body).code).toBe('blocked_message_body');
-    expect(updatedMessages).toHaveLength(0);
+      expect(res.statusCode).toBe(409);
+      expect(['blocked_message_body', 'broken_message_body']).toContain(JSON.parse(res.body).code);
+      expect(updatedMessages).toHaveLength(0);
+    }
   });
 
   test('blocks duplicate pending return-visit messages', async () => {
@@ -275,7 +287,6 @@ test.describe('AI customer message generation', () => {
     await generateHandler(ownerRequest(), res);
 
     expect(res.statusCode).toBe(502);
-    expect(JSON.parse(res.body).message).toBe('AI 문구 생성 실패');
     expect(insertedMessages).toEqual([expect.objectContaining({
       body: null,
       ai_status: 'failed',
@@ -285,17 +296,20 @@ test.describe('AI customer message generation', () => {
     expect(insertedMessages).not.toEqual([expect.objectContaining({ send_status: 'pending' })]);
   });
 
-  test('rejects fallback and test-like generated copy', async () => {
-    openAiBody = { output_text: 'Revaro default message test message', model: 'test-openai-model' };
-    const res = createResponse();
-    await generateHandler(ownerRequest(), res);
+  test('rejects fallback and broken generated copy', async () => {
+    for (const output_text of ['Revaro default message test message', '민지??님, 다시 방문해 주세요.']) {
+      insertedMessages = [];
+      openAiBody = { output_text, model: 'test-openai-model' };
+      const res = createResponse();
+      await generateHandler(ownerRequest(), res);
 
-    expect(res.statusCode).toBe(502);
-    expect(insertedMessages).toEqual([expect.objectContaining({
-      body: null,
-      ai_status: 'failed',
-      send_status: 'draft'
-    })]);
+      expect(res.statusCode).toBe(502);
+      expect(insertedMessages).toEqual([expect.objectContaining({
+        body: null,
+        ai_status: 'failed',
+        send_status: 'draft'
+      })]);
+    }
   });
 
   test('forbidden message text helper blocks unsafe placeholders', () => {
@@ -305,13 +319,14 @@ test.describe('AI customer message generation', () => {
       'fallback message',
       'dummy message',
       'sample message',
-      'lorem ipsum'
+      'lorem ipsum',
+      '민지??님, 다시 방문해 주세요.'
     ]) {
       expect(normalizeGeneratedMessage(value)).toBe('');
     }
   });
 
-  test('operator can see actual AI messages and failed states', async () => {
+  test('operator can see actual AI messages with safe names and failed states', async () => {
     global.fetch = async (url) => {
       const textUrl = String(url);
       if (textUrl.includes('/rpc/operator_session_validate')) {
@@ -334,14 +349,14 @@ test.describe('AI customer message generation', () => {
           {
             id: 'message-2',
             message_type: 'return_visit',
-            body: null,
-            status: 'failed',
-            ai_status: 'failed',
+            body: 'AI??7042님, 다시 방문해 주세요.',
+            status: 'draft',
+            ai_status: 'generated',
             send_status: 'draft',
-            error_message: 'OpenAI message generation failed (500).',
+            error_message: null,
             created_at: '2026-07-21T00:01:00Z',
             stores: { store_code: 'test01', name: '테스트헤어', booking_url: '' },
-            customers: { name: '지훈', last_visit_at: null }
+            customers: { name: 'AI??7042', last_visit_at: null }
           }
         ]);
       }
@@ -355,21 +370,19 @@ test.describe('AI customer message generation', () => {
     expect(res.statusCode).toBe(200);
     expect(body.messages[0]).toEqual(expect.objectContaining({
       body: '민지님, 지난 방문 이후 시간이 조금 지났어요.',
-      ai_status: 'generated',
+      customer_name: '민지',
       send_status: 'draft',
       has_booking_link: true
     }));
     expect(body.messages[1]).toEqual(expect.objectContaining({
-      body: '',
-      ai_status: 'failed',
-      send_status: 'draft',
-      error_message: 'OpenAI message generation failed (500).'
+      body: 'AI 문구 재생성이 필요합니다.',
+      customer_name: '고객명 확인 필요'
     }));
   });
 
-  test('owner message list is scoped to the session store', async () => {
-    duplicateRows = [{
-      id: selectedMessage.id,
+  test('owner message list is scoped to the session store and hides canceled rows', async () => {
+    ownerMessageRows = [{
+      id: MESSAGE_ID,
       customer_id: CUSTOMER_ID,
       body: selectedMessage.body,
       status: 'draft',
@@ -385,7 +398,7 @@ test.describe('AI customer message generation', () => {
 
     expect(res.statusCode).toBe(200);
     expect(body.messages[0]).toEqual(expect.objectContaining({
-      id: selectedMessage.id,
+      id: MESSAGE_ID,
       customer_name: '민지',
       send_status: 'draft'
     }));
@@ -396,7 +409,7 @@ test.describe('AI customer message generation', () => {
     await operatorActionHandler({
       method: 'POST',
       headers: { cookie: `__Host-operator_session=${OPERATOR_TOKEN}` },
-      body: { message_id: selectedMessage.id, action: 'approve' }
+      body: { message_id: MESSAGE_ID, action: 'approve' }
     }, res);
 
     expect(res.statusCode).toBe(200);

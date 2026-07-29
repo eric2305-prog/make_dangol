@@ -9,7 +9,7 @@ const {
   serviceUpdate,
   sha256
 } = require('../../../server/owner-security');
-const { hasForbiddenMessageText } = require('../../../server/ai-message');
+const { hasBrokenDisplayText, hasForbiddenMessageText } = require('../../../server/ai-message');
 
 async function ownerStore(req, res) {
   const token = parseCookies(req)[COOKIE_NAME];
@@ -41,6 +41,11 @@ async function approveMessage(storeId, message) {
   if (hasForbiddenMessageText(message.body)) {
     const error = new Error('테스트/대체 문구는 승인할 수 없습니다.');
     error.code = 'blocked_message_body';
+    throw error;
+  }
+  if (hasBrokenDisplayText(message.body)) {
+    const error = new Error('고객명 또는 문구가 깨져 승인할 수 없습니다.');
+    error.code = 'broken_message_body';
     throw error;
   }
 
@@ -119,7 +124,7 @@ module.exports = async function handler(req, res) {
     return sendJson(res, 200, { ok: true, message_row: updated });
   } catch (error) {
     const code = error && error.code ? error.code : 'message_action_failed';
-    const status = ['not_approvable', 'blocked_message_body', 'consent_required', 'duplicate_pending'].includes(code) ? 409 : 500;
+    const status = ['not_approvable', 'blocked_message_body', 'broken_message_body', 'consent_required', 'duplicate_pending'].includes(code) ? 409 : 500;
     return sendJson(res, status, { ok: false, code, message: error && error.message ? error.message : '메시지를 처리하지 못했습니다.' });
   }
 };

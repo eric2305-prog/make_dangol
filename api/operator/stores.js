@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
     });
     if (!result || result.ok !== true) {
       res.setHeader('Set-Cookie', clearOperatorSessionCookie());
-      return sendJson(res, 401, { ok: false, message: '?댁쁺愿由ъ옄 濡쒓렇?몄씠 ?꾩슂?⑸땲??' });
+      return sendJson(res, 401, { ok: false, message: '운영관리자 권한을 확인하지 못했습니다.' });
     }
 
     const resultStores = (result.stores || []).map((store) => {

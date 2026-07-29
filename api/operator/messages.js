@@ -4,6 +4,7 @@ const {
   sendJson
 } = require('../../server/operator-security');
 const { serviceSelect } = require('../../server/owner-security');
+const { hasBrokenDisplayText } = require('../../server/ai-message');
 
 function publicMessage(row) {
   const customer = row.customers || {};
@@ -15,12 +16,12 @@ function publicMessage(row) {
     id: row.id,
     store_id: store.store_code || '',
     store_name: store.name || '',
-    customer_name: customer.name || '',
+    customer_name: hasBrokenDisplayText(customer.name) ? '고객명 확인 필요' : customer.name || '',
     last_visit_at: customer.last_visit_at || null,
     expected_revisit_at: expectedRevisitAt,
     has_booking_link: !!store.booking_url,
     message_type: row.message_type,
-    body: row.body || '',
+    body: hasBrokenDisplayText(row.body) ? 'AI 문구 재생성이 필요합니다.' : row.body || '',
     ai_status: row.ai_status || 'not_started',
     send_status: row.send_status || row.status || 'draft',
     status: row.status || '',

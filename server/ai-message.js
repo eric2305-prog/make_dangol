@@ -18,6 +18,11 @@ function hasForbiddenMessageText(value) {
   return FORBIDDEN_BODY_PATTERNS.some((pattern) => pattern.test(text));
 }
 
+function hasBrokenDisplayText(value) {
+  const text = String(value || '');
+  return /�|[A-Za-z0-9가-힣]\?\?|\?\?[A-Za-z0-9가-힣]/.test(text);
+}
+
 function normalizeGeneratedMessage(value) {
   const text = String(value || '')
     .replace(/\r\n/g, '\n')
@@ -26,6 +31,7 @@ function normalizeGeneratedMessage(value) {
     .trim();
   if (!text || text.length < 20 || text.length > 500) return '';
   if (hasForbiddenMessageText(text)) return '';
+  if (hasBrokenDisplayText(text)) return '';
   return text;
 }
 
@@ -55,6 +61,13 @@ function addDays(value, days) {
 }
 
 function buildPrompt({ store, customer, settings }) {
+  if (hasBrokenDisplayText(customer && customer.name)) {
+    throw new Error('Customer name contains invalid display text.');
+  }
+  if (hasBrokenDisplayText(store && store.name)) {
+    throw new Error('Store name contains invalid display text.');
+  }
+
   const cycleDays = Number(settings && settings.revisit_cycle_days ? settings.revisit_cycle_days : 30);
   const lastVisitDays = daysSince(customer.last_visit_at);
   const expectedVisitAt = customer.last_visit_at ? addDays(customer.last_visit_at, cycleDays) : null;
@@ -136,6 +149,7 @@ module.exports = {
   DEFAULT_OPENAI_MESSAGE_MODEL,
   buildPrompt,
   generateCustomerMessage,
+  hasBrokenDisplayText,
   hasForbiddenMessageText,
   messageModel,
   normalizeGeneratedMessage

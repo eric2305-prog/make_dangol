@@ -5,7 +5,7 @@ const {
   sendJson
 } = require('../../server/operator-security');
 const { serviceSelect, serviceUpdate } = require('../../server/owner-security');
-const { hasForbiddenMessageText } = require('../../server/ai-message');
+const { hasBrokenDisplayText, hasForbiddenMessageText } = require('../../server/ai-message');
 
 async function approveMessage(message) {
   if (message.ai_status !== 'generated' || message.send_status !== 'draft' || !message.body) {
@@ -18,12 +18,19 @@ async function approveMessage(message) {
     error.code = 'blocked_message_body';
     throw error;
   }
+  if (hasBrokenDisplayText(message.body)) {
+    const error = new Error('고객명 또는 문구가 깨져 승인할 수 없습니다.');
+    error.code = 'broken_message_body';
+    throw error;
+  }
+
   const customer = message.customers || {};
   if (!(customer.kakao_agreed === true && customer.marketing_agreed === true && customer.consent !== false)) {
     const error = new Error('고객 수신 동의가 없어 승인할 수 없습니다.');
     error.code = 'consent_required';
     throw error;
   }
+
   const duplicateRows = await serviceSelect(
     'messages',
     `select=id&store_id=eq.${encodeURIComponent(message.store_id)}&customer_id=eq.${encodeURIComponent(message.customer_id)}&message_type=eq.return_visit&send_status=eq.pending&id=neq.${encodeURIComponent(message.id)}&limit=1`
@@ -33,6 +40,7 @@ async function approveMessage(message) {
     error.code = 'duplicate_pending';
     throw error;
   }
+
   const rows = await serviceUpdate('messages', `id=eq.${encodeURIComponent(message.id)}`, {
     status: 'pending',
     send_status: 'pending',
@@ -86,7 +94,7 @@ module.exports = async function handler(req, res) {
     return sendJson(res, 200, { ok: true, message_row: updated });
   } catch (error) {
     const code = error && error.code ? error.code : 'message_action_failed';
-    const status = ['not_approvable', 'blocked_message_body', 'consent_required', 'duplicate_pending'].includes(code) ? 409 : 500;
+    const status = ['not_approvable', 'blocked_message_body', 'broken_message_body', 'consent_required', 'duplicate_pending'].includes(code) ? 409 : 500;
     return sendJson(res, status, { ok: false, code, message: error && error.message ? error.message : '메시지를 처리하지 못했습니다.' });
   }
 };
