@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
 
     const rows = await serviceSelect(
       'messages',
-      'select=id,message_type,body,status,ai_status,send_status,error_message,created_at,stores(store_code,name,booking_url),customers(name,last_visit_at)&order=created_at.desc&limit=50'
+      'select=id,message_type,body,status,ai_status,send_status,error_message,created_at,stores(store_code,name,booking_url),customers(name,last_visit_at)&message_type=eq.return_visit&ai_status=eq.generated&send_status=in.(draft,pending)&order=created_at.desc&limit=50'
     );
 
     return sendJson(res, 200, {

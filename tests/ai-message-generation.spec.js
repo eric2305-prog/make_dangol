@@ -54,6 +54,7 @@ test.describe('AI customer message generation', () => {
   let customerConsent;
   let duplicateRows;
   let ownerMessageRows;
+  let operatorMessageQueries;
   let openAiStatus;
   let openAiBody;
   let selectedMessage;
@@ -66,6 +67,7 @@ test.describe('AI customer message generation', () => {
     customerConsent = true;
     duplicateRows = [];
     ownerMessageRows = [];
+    operatorMessageQueries = [];
     openAiStatus = 200;
     selectedMessage = {
       id: MESSAGE_ID,
@@ -326,13 +328,14 @@ test.describe('AI customer message generation', () => {
     }
   });
 
-  test('operator can see actual AI messages with safe names and failed states', async () => {
+  test('operator can see actual AI messages with safe names from review-ready rows', async () => {
     global.fetch = async (url) => {
       const textUrl = String(url);
       if (textUrl.includes('/rpc/operator_session_validate')) {
         return jsonResponse({ ok: true, operator_email: 'operator@revaro.me' });
       }
       if (textUrl.includes('/rest/v1/messages?')) {
+        operatorMessageQueries.push(textUrl);
         return jsonResponse([
           {
             id: 'message-1',
@@ -368,6 +371,9 @@ test.describe('AI customer message generation', () => {
     const body = JSON.parse(res.body);
 
     expect(res.statusCode).toBe(200);
+    expect(operatorMessageQueries[0]).toContain('message_type=eq.return_visit');
+    expect(operatorMessageQueries[0]).toContain('ai_status=eq.generated');
+    expect(operatorMessageQueries[0]).toContain('send_status=in.(draft,pending)');
     expect(body.messages[0]).toEqual(expect.objectContaining({
       body: '민지님, 지난 방문 이후 시간이 조금 지났어요.',
       customer_name: '민지',
