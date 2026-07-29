@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -956,20 +956,43 @@
     setTimeout(function(){ p.style.boxShadow=''; }, 1200);
   }
   function approveMsg(id){
-    var el = document.getElementById(id);
-    var chk = el ? el.querySelector('.qbk-check') : null;
-    var withLink = !!bookingLink && chk && chk.checked && !chk.disabled;
-    recordSentMessage(el, 'sent');
-    if(el){ el.style.transition='opacity .3s, transform .3s'; el.style.opacity='0'; el.style.transform='translateX(20px)';
-      setTimeout(function(){ el.remove(); }, 300); }
-    toast(withLink ? '예약 링크를 포함해 메시지를 보냈습니다.' : '메시지를 보냈습니다.');
+    updateMessageAction(id, 'approve');
   }
   function laterMsg(id){
-    var el = document.getElementById(id);
-    if(el){ el.style.opacity='.45'; }
-    toast('나중에 보기로 옮겼습니다.');
+    updateMessageAction(id, 'cancel');
   }
-
+  async function updateMessageAction(id, action){
+    try{
+      var res = await fetch('/api/owner/messages/action', {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message_id:id, action:action})
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || '메시지를 처리하지 못했습니다.');
+      await loadOwnerMessages();
+      toast(action === 'approve' ? '발송 대기 상태로 변경했습니다.' : '발송을 취소했습니다.');
+    }catch(e){
+      toast(e.message || '메시지를 처리하지 못했습니다.');
+    }
+  }
+  async function regenerateMsg(id){
+    try{
+      var res = await fetch('/api/owner/messages/generate', {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message_id:id})
+      });
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || 'AI 문구를 다시 만들지 못했습니다.');
+      await loadOwnerMessages();
+      toast('AI 문구를 다시 만들었습니다.');
+    }catch(e){
+      toast(e.message || 'AI 문구를 다시 만들지 못했습니다.');
+    }
+  }
   /* ---------- 보낸 메시지 mock data ---------- */
   var SENT_STORAGE_KEY = 'revaroOwnerSentMessages';
   var sentFilter = 'all';
@@ -1320,6 +1343,50 @@
   }
   var ownerRegistrationUrl = '';
   var ownerQrStoreId = '';
+  var ownerMessages = [];
+
+  function renderOwnerMessages(rows){
+    ownerMessages = rows || [];
+    var queue = document.querySelector('#queuePanel .queue');
+    if(!queue) return;
+    setText('owner-message-count', ownerMessages.filter(function(m){ return m.send_status === 'draft'; }).length);
+    var count = document.querySelector('#queuePanel .panel-head .count');
+    if(count) count.textContent = ownerMessages.length + '건';
+    if(!ownerMessages.length){
+      queue.innerHTML = '<div class="dashboard-empty">검수할 AI 메시지가 없습니다.</div>';
+      return;
+    }
+    queue.innerHTML = ownerMessages.map(function(m){
+      var name = m.customer_name || '고객';
+      var initial = name.charAt(0) || '고';
+      var body = m.ai_status === 'failed' ? 'AI 문구 생성 실패' : (m.body || '');
+      var canApprove = m.ai_status === 'generated' && m.send_status === 'draft' && !!m.body;
+      var canRegenerate = m.send_status !== 'pending';
+      return '<div class="qmsg" id="'+escapeHtml(m.id)+'" data-customer-id="'+escapeHtml(m.customer_id || '')+'">' +
+        '<div class="qtop"><span class="qav">'+escapeHtml(initial)+'</span><span class="qwho"><b>'+escapeHtml(name)+'</b> <span>· 최근 방문 '+escapeHtml(customerDateLabel(m.last_visit_at))+'</span></span><span class="qtag">'+escapeHtml(m.ai_status || 'not_started')+' · '+escapeHtml(m.send_status || 'draft')+'</span></div>' +
+        '<div class="qbody">'+escapeHtml(body)+'</div>' +
+        '<div class="qbooking"><div class="qbk-line">재방문 추천일: '+escapeHtml(customerDateLabel(m.expected_revisit_at))+'</div>' +
+        '<div class="qbk-line">예약 링크: '+(m.has_booking_link ? '<a class="qbk-url" href="'+escapeHtml(m.booking_url)+'" onclick="return false">'+escapeHtml(m.booking_url)+'</a>' : '<span>없음</span>')+'</div></div>' +
+        '<div class="qacts">' +
+          '<button class="btn-mini solid" onclick="approveMsg(\''+escapeHtml(m.id)+'\')" '+(canApprove ? '' : 'disabled')+'>이 문구로 발송하기</button>' +
+          '<button class="btn-mini" onclick="regenerateMsg(\''+escapeHtml(m.id)+'\')" '+(canRegenerate ? '' : 'disabled')+'>다시 만들기</button>' +
+          '<button class="btn-mini" onclick="laterMsg(\''+escapeHtml(m.id)+'\')" '+(m.send_status === 'canceled' ? 'disabled' : '')+'>발송 취소</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  async function loadOwnerMessages(){
+    try{
+      var res = await fetch('/api/owner/messages', {credentials:'same-origin'});
+      var data = await res.json();
+      if(!res.ok || !data.ok) throw new Error(data.message || 'AI 메시지를 불러오지 못했습니다.');
+      renderOwnerMessages(data.messages || []);
+      return true;
+    }catch(e){
+      renderOwnerMessages([]);
+      return false;
+    }
+  }
 
   function renderQrManagement(store, registrationUrl){
     ownerRegistrationUrl = registrationUrl || '';
@@ -1415,6 +1482,7 @@
       renderCustomerList(customerListRows);
       renderQrManagement(store, response.registration_url);
       renderStoreSettings(store, settings);
+      await loadOwnerMessages();
       return true;
     }catch(e){
       return false;

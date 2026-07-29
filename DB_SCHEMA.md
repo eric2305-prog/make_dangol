@@ -94,7 +94,7 @@ AI 메시지 초안 또는 발송 대기열입니다.
 - `message_type`: `welcome`, `return_visit`, `manual`
 - `channel`: `kakao`, `sms`
 - `body`: 메시지 내용
-- `status`: `draft`, `pending`, `approved`, `sent`, `failed`, `cancelled`
+- `status`: `draft`, `pending`, `approved`, `sent`, `failed`, `canceled`
 - `approved_at`: 승인 시각
 - `sent_at`: 발송 시각
 - `created_at`, `updated_at`: 생성/수정 시각

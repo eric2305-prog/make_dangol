@@ -14,6 +14,7 @@
   .panel{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(25,25,25,.04);overflow:hidden;margin-bottom:18px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line2)}.panel-head h2{font-size:1.08rem;margin:0}.panel-head .hint{font-size:.82rem;color:var(--muted);margin-top:2px}.panel-body{padding:18px 20px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tabs{display:flex;flex-wrap:wrap;gap:8px}.tab{border:0;border-radius:999px;padding:7px 13px;font-weight:700;font-size:.875rem;background:var(--line2);color:var(--soft)}.tab.on{background:var(--ink);color:#fff}.tools{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:9px 12px}.search input{border:0;outline:0;background:transparent;width:220px}
   table{width:100%;border-collapse:collapse} th{background:var(--bg);color:var(--muted);font-size:.75rem;font-weight:700;text-align:left;padding:11px 14px} td{border-top:1px solid var(--line2);padding:13px 14px;font-size:.875rem;vertical-align:middle}.name{font-weight:700}.muted{color:var(--muted);font-size:.75rem}.badge{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:700}.green{background:#ECFDF3;color:var(--green)}.amber{background:#FFF6D6;color:var(--amber)}.gray{background:#F4F4F5;color:#71717A}.red{background:#FDECEC;color:var(--red)}.blue{background:#EFF6FF;color:var(--blue)}
+  .red-text{color:var(--red);font-weight:700}.msg-prev{display:block;max-width:360px;white-space:pre-wrap;color:var(--soft)}
   .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-size:.75rem;font-weight:700;color:var(--ink)}.btn.primary{border-color:var(--kakao);background:var(--kakao)}.btn:disabled{cursor:not-allowed;opacity:.45}
   .task{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 20px;border-top:1px solid var(--line2)}.task:first-child{border-top:0}.task-title{font-weight:700}.empty{padding:44px 20px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--soft);margin-bottom:5px}
   .drawer{position:fixed;right:0;top:0;height:100vh;width:min(460px,100vw);background:#fff;border-left:1px solid var(--line);box-shadow:-16px 0 40px rgba(25,25,25,.16);z-index:50;transform:translateX(110%);transition:.22s}.drawer.open{transform:none}.drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px;border-bottom:1px solid var(--line)}.drawer-body{padding:20px 22px;overflow:auto;max-height:calc(100vh - 86px)}.close{border:1px solid var(--line);background:#fff;border-radius:10px;width:36px;height:36px}
@@ -44,6 +45,7 @@
 <div class="toast" id="toast"></div>
 <script>
 let operatorStores = [];
+let operatorMessages = [];
 let operatorMetrics = { total_stores:0, active_stores:0, pending_stores:0, suspended_stores:0, total_customers:0 };
 let activeStoreFilter = 'all';
 let activeCustomerFilter = 'all';
@@ -61,7 +63,12 @@ const badges = {
   pending:['pending','amber'],
   suspended:['suspended','red'],
   issued:['발급됨','green'],
-  not_issued:['미발급','gray']
+  not_issued:['미발급','gray'],
+  generated:['AI 생성 완료','green'],
+  failed:['AI 문구 생성 실패','red'],
+  draft:['draft','gray'],
+  sent:['sent','blue'],
+  canceled:['canceled','gray']
 };
 
 function esc(value){return String(value==null?'':value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -126,7 +133,23 @@ function renderCustomers(filter=activeCustomerFilter){
     ])));
 }
 function renderMessages(){
-  document.getElementById('messages').innerHTML = panel('AI 메시지·발송','실제 발송 로그 연동은 다음 단계입니다.',`<div class="empty"><b>표시할 발송 데이터가 없습니다</b>발송 로그 테이블 연결 후 이곳에 표시됩니다.</div>`);
+  document.getElementById('messages').innerHTML = panel(
+    'AI 메시지·발송',
+    'AI가 생성해 발송 대기 중인 실제 고객용 문구를 확인합니다.',
+    table(['매장','고객','최근 방문','재방문 추천일','예약 링크','AI 상태','발송 상태','문구','액션'], operatorMessages.map(m=>[
+      `<span class="name">${esc(m.store_name||'-')}</span><div class="muted">${esc(m.store_id||'')}</div>`,
+      esc(m.customer_name||'-'),
+      formatDate(m.last_visit_at),
+      formatDate(m.expected_revisit_at),
+      m.has_booking_link ? badge('있음') : badge('없음'),
+      badge(m.ai_status),
+      badge(m.send_status),
+      m.ai_status==='failed'
+        ? `<span class="red-text">AI 문구 생성 실패</span><div class="muted">${esc(m.error_message||'')}</div>`
+        : `<span class="msg-prev">${esc(m.body)}</span>`,
+      `<button class="btn" onclick="updateOperatorMessageAction('${esc(m.id)}','approve')" ${m.ai_status==='generated'&&m.send_status==='draft'?'':'disabled'}>이 문구로 발송하기</button> <button class="btn" onclick="updateOperatorMessageAction('${esc(m.id)}','cancel')" ${m.send_status==='canceled'?'disabled':''}>발송 취소</button>`
+    ]))
+  );
 }
 function renderBilling(){
   document.getElementById('billing').innerHTML = panel('결제·프로모션','현재는 매장 상태 기준만 표시합니다.',table(['매장','store_id','상태','고객 수'],operatorStores.map(s=>[
@@ -198,7 +221,27 @@ async function loadOperatorStores(){
     pinUpdatedAt:s.pin_updated_at
   }));
   renderDashboard(); renderStores(activeStoreFilter); renderCustomers(activeCustomerFilter); renderMessages(); renderBilling(); renderSettings();
+  await loadOperatorMessages();
   return true;
+}
+async function loadOperatorMessages(){
+  let res=await fetch('/api/operator/messages',{credentials:'same-origin'});
+  if(res.status===401){location.replace('/operator/login');return false}
+  let data=await res.json();
+  if(!res.ok||!data.ok)throw new Error(data.message||'AI 메시지 목록을 불러오지 못했습니다.');
+  operatorMessages=data.messages||[];
+  renderMessages();
+  return true;
+}
+async function updateOperatorMessageAction(messageId, action){
+  try{
+    let res=await fetch('/api/operator/messages-action',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({message_id:messageId,action})});
+    let data=await res.json();
+    if(res.status===401){location.replace('/operator/login');return}
+    if(!res.ok||!data.ok)throw new Error(data.message||'메시지를 처리하지 못했습니다.');
+    await loadOperatorMessages();
+    toast(action==='approve'?'발송 대기 상태로 변경했습니다.':'발송을 취소했습니다.');
+  }catch(e){toast(e.message||'메시지를 처리하지 못했습니다.')}
 }
 async function bootOperator(){
   try{

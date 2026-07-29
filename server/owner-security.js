@@ -143,6 +143,28 @@ async function serviceUpdate(resource, query, body) {
   return response.json();
 }
 
+async function serviceInsert(resource, body) {
+  const url = supabaseUrl();
+  const serviceRoleKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const response = await fetch(`${url}/rest/v1/${resource}`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify(body || {})
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Supabase insert failed: ${resource} (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
 async function serviceUpsert(resource, query, body) {
   const url = supabaseUrl();
   const serviceRoleKey = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
@@ -177,6 +199,7 @@ module.exports = {
   secureHash,
   sendJson,
   serviceRpc,
+  serviceInsert,
   serviceSelect,
   serviceUpdate,
   serviceUpsert,

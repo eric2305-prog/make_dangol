@@ -63,7 +63,7 @@ create table if not exists public.messages (
   updated_at timestamptz not null default now(),
   constraint messages_type_check check (message_type in ('welcome', 'return_visit', 'manual')),
   constraint messages_channel_check check (channel in ('kakao', 'sms')),
-  constraint messages_status_check check (status in ('draft', 'pending', 'approved', 'sent', 'failed', 'cancelled'))
+  constraint messages_status_check check (status in ('draft', 'pending', 'approved', 'sent', 'failed', 'canceled'))
 );
 
 create table if not exists public.send_logs (
